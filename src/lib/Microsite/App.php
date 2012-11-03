@@ -4,21 +4,51 @@ namespace Microsite;
 
 class App
 {
-	private $properties = array();
 	private $routes = array();
 	public $parent = null;
 	private $objects = array();
+	public $template_dirs = array();
+	protected $defaults = array();
+
+	public function __construct() {
+		$this->defaults = [
+			'renderer' => function() {
+				$template_dirs = $this->template_dirs;
+				if(!is_array($template_dirs)) {
+					$template_dirs = [$template_dirs];
+				}
+				$template_dirs = array_merge($template_dirs, [__DIR__ . '/Views']);
+				return \Microsite\Renderers\PHPRenderer::create($template_dirs);
+			}
+		];
+	}
 
 
-	public function route($url, $handler) {
+	public function route($name, $url, $handler = null) {
 		$args = func_get_args();
+		$name = array_shift($args);
 		$url = array_shift($args);
+		if(!is_string($url)) {
+			array_unshift($args, $url);
+			$url = $name;
+			$name = null;
+		}
 		$route = new Route($url);
 		foreach($args as $arg) {
 			$route->add_handler($arg);
 		}
-		$this->routes[] = $route;
+		if($name) {
+			$this->routes[$name] = $route;
+		}
+		else {
+			$this->routes[] = $route;
+		}
 		return $route;
+	}
+
+	public function get_route($name) {
+		$result = isset($this->routes[$name]) ? $this->routes[$name] : null;
+		return $result;
 	}
 
 	public function run($request = null, $response = null, $parent = null) {
@@ -44,10 +74,12 @@ class App
 			$output = false;
 			foreach($this->routes as $route) {
 				if($route->match($request)) {
+					$request['_route'] = $route;
 					$result = $route->run($response, $request, $this);
 					if($result) {
 						$output = (string) $result;
 						$has_output = true;
+						break;
 					}
 				}
 			}
@@ -66,6 +98,11 @@ class App
 			$response['error'] = $e;
 			echo $response->render('error.php');
 		}
+	}
+
+	public function request($url) {
+		$_SERVER['REQUEST_URI'] = $url;
+		$this->run();
 	}
 
 	public function register($object_name, Callable $callback) {

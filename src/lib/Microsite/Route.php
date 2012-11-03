@@ -8,8 +8,12 @@ class Route
 	private $handlers = array();
 	private $validators = array();
 	private $fluid_url = false;
+	public $name = '';
 
 	public function __construct($url) {
+		if(is_string($url)) {
+			$url = new Segment($url);
+		}
 		$this->url = $url;
 	}
 
@@ -33,6 +37,10 @@ class Route
 		return $this->validate(function(){ return $_SERVER['REQUEST_METHOD'] == 'GET'; });
 	}
 
+	public function build($vars) {
+		return $this->url->build($vars);
+	}
+
 	public function match(Request $request) {
 		$match = false;
 
@@ -47,7 +55,7 @@ class Route
 				$match_part = $this->url;
 			}
 		}
-		elseif($this->url instanceof Regex && $matches = $this->url->match($match_url)) {
+		elseif($this->url instanceof RouteMatcher && $matches = $this->url->match($match_url)) {
 			foreach($matches as $key => $value) {
 				$request[$key] = $value;
 			}
@@ -68,6 +76,7 @@ class Route
 
 	public function run(Response $response, Request $request, App $app) {
 		foreach($this->handlers as $handler) {
+			$result = false;
 			ob_start();
 			if(is_callable($handler)) {
 				$result = $handler($response, $request, $app);

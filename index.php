@@ -12,22 +12,16 @@ include 'src/microsite.phar';
 
 $app = new App();
 
+// Assign a directory in which templates can be found for rendering
 $app->template_dirs = [
 	__DIR__ . '/views',
-	'phar://microsite.phar/lib/Microsite/Views'
 ];
-
-$app->register('renderer', function() use($app) {
-	return \Microsite\Renderers\PHPRenderer::create(
-		$app->template_dirs
-	);
-});
 
 /**
  * Basic home page.
  * Set the view to a home.php view provided in the view directory
  */
-$app->route('/', function(Response $response){
+$app->route('home', '/', function(Response $response){
 	return $response->render('home.php');
 });
 
@@ -45,10 +39,36 @@ $app->route('/echo', function(){
 	echo "A response can even be echoed from inside a function";
 });
 
+
+/**
+ * Route with a parameter
+ */
+$app->route('hello', '/hello/:name', function(Response $response, Request $request){
+	echo "Hello {$request['name']}!";
+});
+
+/**
+ * Route with a regular expression filtered parameter
+ */
+$app->route('/count/:number#[0-9]+#', function(Response $response, Request $request){
+	echo "This is a number: {$request['number']}";
+});
+
+/**
+ * Use the route system to produce the url to the named route "hello"
+ */
+$app->route('/interior', function(Response $response, Request $request, App $app) {
+	$response['output'] = $app->get_route('hello')->build(['name' => 'User']);
+	return $response->render('debug.php');
+});
+
+
 /**
  * A simple custom Handler class
  */
 class MyHandler extends \Microsite\Handler {
+	public $prerequisite;
+
 	public function handler_one() {
 		echo 'This is a custom handler function.';
 	}
@@ -111,8 +131,8 @@ $app->route(
  * Pass the name back into the response for output.
  * Use the internal debug.php view again for output.
  */
-$app->route(new Regex('#/hello/(?P<name>.+)/?$#'), function(Response $response, Request $request){
-	$response['output'] = "Hello {$request['name']}";
+$app->route(new Regex('#/hiya/(?P<name>.+)/?$#'), function(Response $response, Request $request){
+	$response['output'] = "Hiya {$request['name']}";
 	return $response->render('debug.php');
 });
 
@@ -142,8 +162,7 @@ $admin = new App();
  * Output a message using the internal debug.php template
  */
 $admin->route('/plugins', function(Response $response){
-	$response['output'] = "This is the Plugins page";
-	return $response->render('debug.php');
+	echo "This is the Plugins page";
 });
 
 /**

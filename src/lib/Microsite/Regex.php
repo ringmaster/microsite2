@@ -2,7 +2,7 @@
 
 namespace Microsite;
 
-class Regex
+class Regex extends RouteMatcher
 {
 	private $regex;
 	
@@ -15,5 +15,9 @@ class Regex
 			return $matches;
 		}
 		return false;
+	}
+
+	public function build($vars) {
+		return '';
 	}
 }
