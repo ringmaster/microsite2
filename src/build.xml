@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Microsite" default="package">
+
+	<!-- target: lint -->
+	<target name="lint">
+		<phplint haltonfailure="true" level="verbose">
+			<fileset dir=".">
+				<include name="lib/**/*.php"/>
+			</fileset>
+		</phplint>
+	</target>
+
+	<!-- Target: build -->
+	<target name="build" depends="lint">
+		<delete dir="./build"/>
+		<mkdir dir="./build"/>
+		<copy todir="./build">
+			<fileset dir=".">
+				<include name="lib/"/>
+			</fileset>
+			<fileset dir="static">
+				<include name="**"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Target: package -->
+	<target name="package" depends="build">
+		<delete file="./microsite.phar"/>
+		<pharpackage
+			destfile="./microsite.phar"
+			basedir="./build"
+			compression="none"
+			stub="./stub.php"
+			signature="sha1">
+			<fileset dir="./build">
+				<include name="**/**"/>
+			</fileset>
+			<metadata>
+				<element name="version" value="2.0"/>
+				<element name="authors">
+					<element name="Owen Winkler">
+						<element name="email" value="ringmaster@midnightcircus.com"/>
+					</element>
+				</element>
+			</metadata>
+		</pharpackage>
+	</target>
+
+	<target name="deploy" depends="package">
+		<scp username="owen"
+				 host="192.168.1.11"
+				 todir="/var/www/home.lise/htdocs/src">
+			<fileset dir=".">
+				<include name="**/*.phar"/>
+			</fileset>
+		</scp>
+	</target>
+</project>
