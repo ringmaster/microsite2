@@ -1,5 +1,5 @@
 # Microsite 2
-*A reincarnation of the Microsite framework.
+*A reincarnation of the Microsite framework.*
 
 ## Requirements
 
@@ -28,11 +28,24 @@ include 'microsite.phar';
 $app = new \Microsite\App();
 
 $app->route('home', '/', function(){
-	return "Anything returned or echod here will be displayed at the URL /";
+	return "Anything returned or echoed here will be displayed at the URL /";
 });
+
+// Put any new routes here, before the ->run() method.
 
 $app->run();
 
+?>
+```
+
+### Variable URLs
+
+You can detect variables passed in to your URLs easily:
+
+```php
+$app->route('hello', '/hello/:name', function($response, $request){
+	return "Hello {$request['name']}!";
+});
 ?>
 ```
 
