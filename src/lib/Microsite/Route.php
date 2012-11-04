@@ -29,6 +29,10 @@ class Route
 		return $this;
 	}
 
+	public function validate_fields($validation) {
+		$this->url->validate_fields($validation);
+	}
+
 	public function post() {
 		return $this->validate(function(){ return $_SERVER['REQUEST_METHOD'] == 'POST'; });
 	}

@@ -28,11 +28,6 @@ class App
 		$args = func_get_args();
 		$name = array_shift($args);
 		$url = array_shift($args);
-		if(!is_string($url)) {
-			array_unshift($args, $url);
-			$url = $name;
-			$name = null;
-		}
 		$route = new Route($url);
 		foreach($args as $arg) {
 			$route->add_handler($arg);

@@ -28,14 +28,14 @@ $app->route('home', '/', function(Response $response){
 /**
  * Simple string output.
  */
-$app->route('/string', function(){
+$app->route('string', '/string', function(){
 	return "A response can be a simple string from inside a function";
 });
 
 /**
  * Simple echo output.
  */
-$app->route('/echo', function(){
+$app->route('echo', '/echo', function(){
 	echo "A response can even be echoed from inside a function";
 });
 
@@ -48,16 +48,42 @@ $app->route('hello', '/hello/:name', function(Response $response, Request $reque
 });
 
 /**
- * Route with a regular expression filtered parameter
+ * Route with a validated parameter
  */
-$app->route('/count/:number#[0-9]+#', function(Response $response, Request $request){
+$app->route('count', '/count/:number', function(Response $response, Request $request){
 	echo "This is a number: {$request['number']}";
-});
+})->validate_fields([':number' => '[0-9]+']);
+
+/**
+ * Route with a validated parameter function, only /valid/ok correctly routes here
+ */
+$app->route('valid', '/valid/:valid', function(Response $response, Request $request){
+	echo "This is a valid route: {$request['valid']}";
+})->validate_fields([':valid' => function($matches, $value){if($value == 'ok') return $matches; else return false;}]);
+
+/**
+ * Two handlers
+ */
+$app->route(
+	'evenodd',
+	'/evenodd/:number',
+	function(Response $response, Request $request){
+		if($request['number'] % 2 == 0) {
+			echo "This is an even number";
+		}
+	},
+	function(Response $response, Request $request){
+		if($request['number'] % 2 == 1) {
+			echo "This is an odd number";
+		}
+	}
+)->validate_fields([':number' => '[0-9]+']);
+
 
 /**
  * Use the route system to produce the url to the named route "hello"
  */
-$app->route('/interior', function(Response $response, Request $request, App $app) {
+$app->route('interior', '/interior', function(Response $response, Request $request, App $app) {
 	$response['output'] = $app->get_route('hello')->build(['name' => 'User']);
 	return $response->render('debug.php');
 });
@@ -83,13 +109,14 @@ class MyHandler extends \Microsite\Handler {
 /**
  * Have this route respond with a method from the custom handler
  */
-$app->route('/dohandler1', Handler::handle('MyHandler', 'handler_one'));
+$app->route('dohandler', '/dohandler1', Handler::handle('MyHandler', 'handler_one'));
 
 /**
  * Demonstrate the shared handler instance between handler methods
  * This allows a handler class object to maintain a state between handler method execution
  */
 $app->route(
+	'prerequisite',
 	'/prerequisite',
 	Handler::handle('MyHandler', 'prerequisite'),
 	Handler::handle('MyHandler', 'handler_two')
@@ -99,7 +126,7 @@ $app->route(
  * GET method only
  * Demonstrates two routes with the same URL, on different HTTP methods
  */
-$app->route('/form', function(){
+$app->route('form', '/form', function(){
 	echo <<< FORM_HTML
 <form action="" method="POST">
 <label>Name: <input type="text" name="name" /></label>
@@ -114,6 +141,7 @@ FORM_HTML;
  * Demonstrates two routes with the same URL, on different HTTP methods
  */
 $app->route(
+	'form_post',
 	'/form',
 	function($response) {
 		if(trim($_POST['name']) == '') {
@@ -131,7 +159,7 @@ $app->route(
  * Pass the name back into the response for output.
  * Use the internal debug.php view again for output.
  */
-$app->route(new Regex('#/hiya/(?P<name>.+)/?$#'), function(Response $response, Request $request){
+$app->route('hiya', new Regex('#/hiya/(?P<name>.+)/?$#'), function(Response $response, Request $request){
 	$response['output'] = "Hiya {$request['name']}";
 	return $response->render('debug.php');
 });
@@ -140,14 +168,14 @@ $app->route(new Regex('#/hiya/(?P<name>.+)/?$#'), function(Response $response, R
 /**
  * Only accept even arguments in the URL
  */
-$app->route(new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(){
+$app->route('even', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(){
 	echo "The number was even.";
 })->validate(function($request) { return $request['number'] % 2 == 0;});
 
 /**
  * Only accept odd arguments in the URL
  */
-$app->route(new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(){
+$app->route('odd', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(){
 	echo "The number was odd.";
 })->validate(function($request) { return $request['number'] % 2 == 1;});
 
@@ -161,14 +189,14 @@ $admin = new App();
  * Within the admin app, create a /plugins URL
  * Output a message using the internal debug.php template
  */
-$admin->route('/plugins', function(Response $response){
+$admin->route('plugins', '/plugins', function(Response $response){
 	echo "This is the Plugins page";
 });
 
 /**
  * Add the admin app as a handler within the /admin route on the main app
  */
-$app->route('/admin', $admin);
+$app->route('admin', '/admin', $admin);
 
 /**
  * Register an on-demand object with the app
@@ -205,7 +233,7 @@ $app->register('db', function(){
 	return $db;
 });
 
-$app->route('/database', function(Response $response, $request, $app) {
+$app->route('database', '/database', function(Response $response, $request, $app) {
 	$samples = $app->db()->results('SELECT * FROM sample ORDER BY age ASC;');
 	$response['output'] = $response->partial('table.php', array('results' => $samples));
 	return $response->render('debug.php');
