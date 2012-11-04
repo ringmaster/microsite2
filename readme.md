@@ -49,3 +49,6 @@ $app->route('hello', '/hello/:name', function($response, $request){
 ?>
 ```
 
+## Additional Examples
+
+There are many additional examples of potential route functionality in the index.php file at the root of the repo.
