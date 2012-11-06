@@ -62,6 +62,25 @@ $app->route('valid', '/valid/:valid', function(Response $response, Request $requ
 })->validate_fields([':valid' => function($matches, $value) {if($value == 'ok') return $matches; else return false;}]);
 
 /**
+ * Convert an incoming url parameter into a useful value
+ */
+$app
+	->route(
+		'user',
+		'/user/:user',
+		function(Response $response, Request $request) {
+			echo "The requested user's name is: {$request['user']->name}";
+		}
+	)
+	->validate_fields([':user' => '\d+'])
+	->convert('user', function($user_id){
+		$user = new stdClass(); // Simulate getting a database record.
+		$user->id = $user_id;
+		$user->name = 'Test User';
+		return $user;
+	});
+
+/**
  * Two handlers
  */
 $app->route(
@@ -153,6 +172,10 @@ $app->route(
 	}
 )->post();
 
+/**
+ * Response for either the GET or POST method
+ */
+$app->route('getorpost', '/method', function() {echo 'Worked.';})->via('GET,POST');
 
 /**
  * Use a regular expression to test the route URL

@@ -31,18 +31,31 @@ class Route
 
 	public function validate_fields($validation) {
 		$this->url->validate_fields($validation);
+		return $this;
 	}
 
 	public function post() {
-		return $this->validate(function() { return $_SERVER['REQUEST_METHOD'] == 'POST'; });
+		return $this->via('POST');
 	}
 
 	public function get() {
-		return $this->validate(function() { return $_SERVER['REQUEST_METHOD'] == 'GET'; });
+		return $this->via('GET');
+	}
+
+	public function via($method) {
+		if(is_string($method)) {
+			$method = explode(',', $method);
+		}
+		return $this->validate(function() use($method) { return in_array($_SERVER['REQUEST_METHOD'], $method); });
 	}
 
 	public function build($vars) {
 		return $this->url->build($vars);
+	}
+
+	public function convert($var, $fn) {
+		$this->url->convert($var, $fn);
+		return $this;
 	}
 
 	public function match(Request $request) {

@@ -7,6 +7,7 @@ class Segment extends RouteMatcher
 	protected $regex = false;
 	protected $route;
 	protected $validations = array();
+	protected $conversions = array();
 
 	public function __construct($route) {
 		$this->route = $route;
@@ -20,6 +21,12 @@ class Segment extends RouteMatcher
 			foreach($this->validations as $field => $validation) {
 				if(is_callable($validation)) {
 					$matches = $validation($matches, $matches[substr($field, 1)], $this, $field);
+				}
+			}
+			// If $matches is false, then field validation failed.  Don't convert if field validation failed.
+			if($matches) {
+				foreach($this->conversions as $field => $fn) {
+					$matches[$field] = $fn((isset($matches[$field]) ? $matches[$field] : null), $field);
 				}
 			}
 			return $matches;
@@ -87,5 +94,9 @@ class Segment extends RouteMatcher
 
 	public function validate_fields($validations) {
 		$this->validations = $validations;
+	}
+
+	public function convert($field, $fn) {
+		$this->conversions[$field] = $fn;
 	}
 }
