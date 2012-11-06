@@ -20,7 +20,7 @@ class DB extends PDO
 		}
 	}
 
-	public function query( $query, $args = array() )
+	public function query($query, $args = array())
 	{
 		if(!empty($this->pdo_statement)) {
 			$this->pdo_statement->closeCursor();
@@ -42,7 +42,7 @@ class DB extends PDO
 	public function results($query, $args = array(), $class_name = '\Microsite\Model')
 	{
 		$this->fetch_class = $class_name;
-		if ( $this->query( $query, $args ) ) {
+		if($this->query($query,$args)) {
 			return $this->pdo_statement->fetchAll();
 		}
 		else {
@@ -54,7 +54,7 @@ class DB extends PDO
 	{
 		$this->fetch_class = $class_name;
 
-		if ( $this->query( $query, $args ) ) {
+		if($this->query($query,$args)) {
 			return $this->pdo_statement->fetch();
 		}
 		else {
@@ -64,7 +64,7 @@ class DB extends PDO
 
 	public function col($query, $args = array())
 	{
-		if ( $this->query( $query, $args ) ) {
+		if($this->query($query,$args)) {
 			return $this->pdo_statement->fetchAll(PDO::FETCH_COLUMN);
 		}
 		else {
@@ -74,7 +74,7 @@ class DB extends PDO
 
 	public function val($query, $args = array())
 	{
-		if ( $this->query( $query, $args ) ) {
+		if($this->query($query,$args)) {
 			$result = $this->pdo_statement->fetch(PDO::FETCH_NUM);
 			return $result[0];
 		}
@@ -85,7 +85,7 @@ class DB extends PDO
 
 	public function assoc($query, $args = array(), $keyfield = 0, $valuefield = 1)
 	{
-		if ( $this->query( $query, $args ) ) {
+		if($this->query($query,$args)) {
 			if(is_string($valuefield)) {
 				$this->fetch_class = $valuefield;
 				$result = $this->pdo_statement->fetchAll();

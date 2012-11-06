@@ -34,11 +34,11 @@ class Route
 	}
 
 	public function post() {
-		return $this->validate(function(){ return $_SERVER['REQUEST_METHOD'] == 'POST'; });
+		return $this->validate(function() { return $_SERVER['REQUEST_METHOD'] == 'POST'; });
 	}
 
 	public function get() {
-		return $this->validate(function(){ return $_SERVER['REQUEST_METHOD'] == 'GET'; });
+		return $this->validate(function() { return $_SERVER['REQUEST_METHOD'] == 'GET'; });
 	}
 
 	public function build($vars) {
