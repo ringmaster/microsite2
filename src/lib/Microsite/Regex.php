@@ -6,7 +6,7 @@ class Regex extends RouteMatcher
 {
 	protected $regex;
 	protected $validations;
-	
+
 	public function __construct($regex) {
 		$this->regex = $regex;
 	}

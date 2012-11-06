@@ -7,8 +7,7 @@ class Model
 	protected $fields = array();
 	protected $db = null;
 
-	function __construct($db)
-	{
+	function __construct($db) {
 		$this->db = $db;
 	}
 
@@ -19,7 +18,7 @@ class Model
 //		$this->db->row($sql, $crit, $class);
 //	}
 
-	public function insert($table){
+	public function insert($table) {
 		$sql = "INSERT INTO {$table} (";
 		$sql .= implode(', ', array_keys($this->fields));
 		$sql .= ') VALUES (';
@@ -28,7 +27,7 @@ class Model
 		$this->db->query($sql, $this->fields);
 	}
 
-	public function update($table, $index){
+	public function update($table, $index) {
 		if(is_string($index)) {
 			$index = array($index => $this->fields[$index]);
 		}
@@ -76,7 +75,7 @@ class Model
 		}
 	}
 
-	private function _pdo_field_prefix($field){
+	private function _pdo_field_prefix($field) {
 		return ':' . $field;
 	}
 

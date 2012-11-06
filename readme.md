@@ -27,7 +27,7 @@ include 'microsite.phar';
 
 $app = new \Microsite\App();
 
-$app->route('home', '/', function(){
+$app->route('home', '/', function() {
 	return "Anything returned or echoed here will be displayed at the URL /";
 });
 
@@ -43,7 +43,7 @@ $app->run();
 You can detect variables passed in to your URLs easily:
 
 ```php
-$app->route('hello', '/hello/:name', function($response, $request){
+$app->route('hello', '/hello/:name', function($response, $request) {
 	return "Hello {$request['name']}!";
 });
 ?>

@@ -9,7 +9,7 @@ else {
 		if(strpos($r, '/microsite.phar') !== false) {
 			$r = preg_replace('#^.*/microsite.phar#', '', $r);
 		}
-		if (file_exists("phar://microsite.phar{$r}")) {
+		if(file_exists("phar://microsite.phar{$r}")) {
 			return $r;
 		}
 		else {
@@ -66,7 +66,7 @@ spl_autoload_register(function ($className) {
 	$libPath = 'phar://microsite.phar/lib/';
 	$classFile = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
 	$classPath = $libPath . $classFile;
-	if (file_exists($classPath)) {
+	if(file_exists($classPath)) {
 		require($classPath);
 	}
 	else {
