@@ -16,7 +16,7 @@ class Regex extends RouteMatcher
 		if(preg_match($this->regex, $value, $matches)) {
 			foreach($this->validations as $field => $validation) {
 				if(is_callable($validation)) {
-					$matches = $validation($matches, $matches[substr($field, 1)], $this, $field);
+					$matches = $validation($matches, $matches[$field], $this, $field);
 				}
 			}
 			// If $matches is false, then field validation failed.  Don't convert if field validation failed.

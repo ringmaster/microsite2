@@ -52,14 +52,14 @@ $app->route('hello', '/hello/:name', function(Response $response, Request $reque
  */
 $app->route('count', '/count/:number', function(Response $response, Request $request) {
 	echo "This is a number: {$request['number']}";
-})->validate_fields([':number' => '[0-9]+']);
+})->validate_fields(['number' => '[0-9]+']);
 
 /**
  * Route with a validated parameter function, only /valid/ok correctly routes here
  */
 $app->route('valid', '/valid/:valid', function(Response $response, Request $request) {
 	echo "This is a valid route: {$request['valid']}";
-})->validate_fields([':valid' => function($matches, $value) {if($value == 'ok') return $matches; else return false;}]);
+})->validate_fields(['valid' => function($value) {return ($value == 'ok');}]);
 
 /**
  * Convert an incoming url parameter into a useful value
@@ -227,7 +227,7 @@ $app->route('admin', '/admin', $admin);
 $app->demand('mockdb', function($param) {
 	$obj = new stdClass();
 	$obj->foo = 'bar';
-	$obj->baz = [1,2,3];
+	$obj->baz = range($param, $param + 15, 3);
 	$obj->microtime = microtime(true);
 	$obj->param = $param;
 	return $obj;
@@ -243,8 +243,8 @@ $app->route('json', '/json', function(Response $response, Request $request, App 
 	$response['user'] = 'Owen';
 	$response['user_id'] = 1;
 	$response['registered'] = true;
-	$response['mockdb_obj'] = $app->mockdb('a');
-	$response['mockdb_obj2'] = $app->mockdb('b');
+	$response['mockdb_obj'] = $app->mockdb(1);
+	$response['mockdb_obj2'] = $app->mockdb(16);
 	$response->set_renderer(\Microsite\Renderers\JSONRenderer::create(''));
 	return $response->render();
 });

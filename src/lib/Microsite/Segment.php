@@ -20,7 +20,10 @@ class Segment extends RouteMatcher
 		if(preg_match($this->regex, $value, $matches)) {
 			foreach($this->validations as $field => $validation) {
 				if(is_callable($validation)) {
-					$matches = $validation($matches, $matches[substr($field, 1)], $this, $field);
+					if(!$result = $validation($matches[$field], $matches, $this, $field)) {
+						$matches = false;
+						break;
+					}
 				}
 			}
 			// If $matches is false, then field validation failed.  Don't convert if field validation failed.
