@@ -95,6 +95,11 @@ class App
 		}
 	}
 
+	public function __invoke(Response $response, Request $request, App $app) {
+		$request['url'] = $request['match_url'];
+		return $this->run($request, $response, $app);
+	}
+
 	public function request($url) {
 		$_SERVER['REQUEST_URI'] = $url;
 		$this->run();

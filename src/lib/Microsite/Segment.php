@@ -76,13 +76,25 @@ class Segment extends RouteMatcher
 				}
 				$regex .= ')';
 				if(count($segments) == 0) {
-					$regex .= '$'; // If the last segment is a regex, be greedy until the end of the URL
+					if($this->fluid) {
+						// If the last segment is a regex, but the route is fluid, capture the end of the URL into match_url
+						// Will this ever work?
+						$regex .= '(?P<match_url>/.*)?$';
+					}
+					else {
+						$regex .= '$'; // If the last segment is a regex, be greedy until the end of the URL
+					}
 				}
 			}
 			else {
 				$regex .= preg_quote($segment, '#');
 				if(count($segments) == 0) {
-					$regex .= '$'; // If the last segment is a regex, be greedy until the end of the URL
+					if($this->fluid) {
+						$regex .= '(?P<match_url>/.*)?$'; // If the last segment is a literal, but the route is fluid, capture the end of the URL into match_url
+					}
+					else {
+						$regex .= '$'; // If the last segment is a literal, cap the end of the URL
+					}
 				}
 			}
 		}

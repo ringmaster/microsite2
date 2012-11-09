@@ -7,7 +7,6 @@ class Route
 	private $url;
 	private $handlers = array();
 	private $validators = array();
-	private $fluid_url = false;
 	public $name = '';
 
 	public function __construct($url) {
@@ -20,12 +19,15 @@ class Route
 	public function add_handler($handler) {
 		$this->handlers[] = $handler;
 		if($handler instanceof App) {
-			$this->fluid_url = true;
+			$this->url->fluid = true;
 		}
 	}
 
 	public function validate($validator) {
-		$this->validators[] = $validator;
+		$args = func_get_args();
+		foreach($args as $validator) {
+			$this->validators[] = $validator;
+		}
 		return $this;
 	}
 
@@ -66,27 +68,17 @@ class Route
 			$match_url = $request['match_url'];
 		}
 
-		if(is_string($this->url)) {
-			if($this->url == $match_url || ($this->fluid_url && strpos($match_url, $this->url) === 0)) {
-				$match = true;
-				$match_part = $this->url;
-			}
-		}
-		elseif($this->url instanceof RouteMatcher && $matches = $this->url->match($match_url)) {
+		if($this->url instanceof RouteMatcher && $matches = $this->url->match($match_url)) {
 			foreach($matches as $key => $value) {
 				$request[$key] = $value;
 			}
 			$match = true;
-			$match_part = $matches[0];
 		}
 		if($match) {
 			foreach($this->validators as $validator) {
 				$match &= $validator($request, $match_url, $this);
 				if(!$match) break;
 			}
-		}
-		if($match && $this->fluid_url) {
-			$request['match_url'] = str_replace($match_part, '', $match_url);
 		}
 		return $match;
 	}
@@ -98,9 +90,9 @@ class Route
 			if(is_callable($handler)) {
 				$result = $handler($response, $request, $app);
 			}
-			elseif($handler instanceof App) {
-				$result = $handler->run($request, $response, $app);
-			}
+//			elseif($handler instanceof App) {
+//				$result = $handler->run($request, $response, $app);
+//			}
 			$output = ob_get_clean();
 			if(!$result) {
 				$result = $output;
@@ -110,6 +102,8 @@ class Route
 				return $result;
 			}
 		}
+
+		return false;
 	}
 }
 
