@@ -95,8 +95,12 @@ class App
 		}
 	}
 
-	public function __invoke(Response $response, Request $request, App $app) {
-		$request['url'] = $request['match_url'];
+	public function __invoke(Response $response = null, Request $request = null, App $app = null) {
+		if(isset($request['match_url'])) {
+			$request = new Request([
+				'url' => $request['match_url'],
+			]);
+		}
 		return $this->run($request, $response, $app);
 	}
 

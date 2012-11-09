@@ -224,11 +224,12 @@ $app->route('admin', '/admin', $admin);
 /**
  * Register an on-demand object with the app
  */
-$app->register('mockdb', function() {
+$app->register('mockdb', function($param) {
 	$obj = new stdClass();
 	$obj->foo = 'bar';
 	$obj->baz = [1,2,3];
 	$obj->microtime = microtime(true);
+	$obj->param = $param;
 	return $obj;
 });
 
@@ -237,12 +238,12 @@ $app->register('mockdb', function() {
  * Fetch the registsered on-demand "mockdb" object from the app
  * Note that both mockdb objects are the same - it is created only once
  */
-$app->route('/json', function(Response $response, Request $request, App $app) {
+$app->route('json', '/json', function(Response $response, Request $request, App $app) {
 	$response['user'] = 'Owen';
 	$response['user_id'] = 1;
 	$response['registered'] = true;
-	$response['mockdb_obj'] = $app->mockdb();
-	$response['mockdb_obj2'] = $app->mockdb();
+	$response['mockdb_obj'] = $app->mockdb('a');
+	$response['mockdb_obj2'] = $app->mockdb('b');
 	$response->set_renderer(\Microsite\Renderers\JSONRenderer::create(''));
 	return $response->render();
 });
@@ -265,6 +266,6 @@ $app->route('database', '/database', function(Response $response, $request, $app
 /**
  * Run the app to match and dispatch routes
  */
-$app->run();
+$app();
 
 ?>
