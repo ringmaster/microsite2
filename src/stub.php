@@ -62,15 +62,6 @@ else {
 	);
 	Phar::webPhar("microsite.phar", 'index.php', '404.php', $mimes, 'microsite_rewrite');
 }
-spl_autoload_register(function ($className) {
-	$libPath = 'phar://microsite.phar/lib/';
-	$classFile = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-	$classPath = $libPath . $classFile;
-	if(file_exists($classPath)) {
-		require($classPath);
-	}
-	else {
-		die('Class ' . $className . ' not found at ' . $classPath);
-	}
-});
+include 'phar://microsite.phar/lib/Microsite/Autoloader.php';
+\Microsite\Autoloader::init();
 __HALT_COMPILER();
