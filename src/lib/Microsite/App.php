@@ -12,14 +12,14 @@ class App
 
 	public function __construct() {
 		$this->defaults = [
-			'renderer' => function() {
+			'renderer' => new DIObject(function() {
 				$template_dirs = $this->template_dirs;
 				if(!is_array($template_dirs)) {
 					$template_dirs = [$template_dirs];
 				}
 				$template_dirs = array_merge($template_dirs, [__DIR__ . '/Views']);
 				return \Microsite\Renderers\PHPRenderer::create($template_dirs);
-			}
+			}, true)
 		];
 	}
 
@@ -109,8 +109,12 @@ class App
 		$this->run();
 	}
 
-	public function register($object_name, Callable $callback) {
-		$this->objects[$object_name] = $callback;
+	public function share($object_name, Callable $callback) {
+		$this->objects[$object_name] = new DIObject($callback, true);
+	}
+
+	public function demand($object_name, Callable $callback) {
+		$this->objects[$object_name] = new DIObject($callback);
 	}
 
 	public function __call($name, $args) {
@@ -120,14 +124,7 @@ class App
 		elseif(isset($this->defaults[$name])) {
 			$call_object = $this->defaults[$name];
 		}
-		if(is_callable($call_object)) {
-			$object = call_user_func_array($call_object, $args);
-			$this->objects[$name] = $object;
-		}
-		else {
-			$object = $call_object;
-		}
-		return $object;
+		return $call_object->invoke($args);
 	}
 
 }

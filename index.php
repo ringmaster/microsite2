@@ -7,8 +7,8 @@ use \Microsite\Request;
 use \Microsite\DB;
 use \Microsite\Handler;
 
-include 'src/microsite.phar';
-//include 'src/stub2.php';
+//include 'src/microsite.phar';
+include 'src/stub2.php';
 
 $app = new App();
 
@@ -224,7 +224,7 @@ $app->route('admin', '/admin', $admin);
 /**
  * Register an on-demand object with the app
  */
-$app->register('mockdb', function($param) {
+$app->demand('mockdb', function($param) {
 	$obj = new stdClass();
 	$obj->foo = 'bar';
 	$obj->baz = [1,2,3];
@@ -236,7 +236,8 @@ $app->register('mockdb', function($param) {
 /**
  * Return the view data as a json object
  * Fetch the registsered on-demand "mockdb" object from the app
- * Note that both mockdb objects are the same - it is created only once
+ * Note that the mockdb objects are the different because it was registered with ->demand()
+ * If it was registered with ->share() it would be created only once
  */
 $app->route('json', '/json', function(Response $response, Request $request, App $app) {
 	$response['user'] = 'Owen';
@@ -252,7 +253,7 @@ $app->route('json', '/json', function(Response $response, Request $request, App 
 /**
  * Register an on-demand object with the app for a real database
  */
-$app->register('db', function() {
+$app->share('db', function() {
 	$db = new DB('sqlite:' . __DIR__ . '/db.db');
 	return $db;
 });
