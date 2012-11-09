@@ -84,6 +84,7 @@ class App
 					echo $output;
 				}
 				else {
+					header('HTTP/1.1 404 Not Found');
 					echo $response->render('404.php');
 				}
 			}
@@ -91,6 +92,7 @@ class App
 		}
 		catch(\Exception $e) {
 			$response['error'] = $e;
+			header('HTTP/1.1 500 Internal Server Error');
 			echo $response->render('error.php');
 		}
 	}

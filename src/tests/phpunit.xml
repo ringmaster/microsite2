@@ -1,0 +1,5 @@
+<phpunit bootstrap="bootstrap.php">
+	<testsuite name="Full Microsite">
+		<directory>.</directory>
+	</testsuite>
+</phpunit>
