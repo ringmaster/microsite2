@@ -20,7 +20,10 @@ class PHPRenderer extends Renderer
 	}
 
 	public function render($template, $vars) {
-		if($template_file = $this->get_template_file($template)) {
+		if(is_callable($template)) {
+			$result = $template($vars);
+		}
+		elseif($template_file = $this->get_template_file($template)) {
 			extract($vars);
 			ob_start();
 			include $template_file;

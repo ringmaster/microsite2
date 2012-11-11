@@ -6,7 +6,7 @@ class DIObject
 {
 	protected $callback;
 	protected $shared;
-	protected static $result = null;
+	protected $result = null;
 
 	public function __construct($callback, $shared = false) {
 		$this->callback = $callback;

@@ -19,7 +19,10 @@ class App
 				}
 				$template_dirs = array_merge($template_dirs, [__DIR__ . '/Views']);
 				return \Microsite\Renderers\PHPRenderer::create($template_dirs);
-			}, true)
+			}, true),
+			'header' => new DIObject(function($header, $replace = null, $http_response_code = null){
+				header($header, $replace, $http_response_code);
+			}),
 		];
 	}
 
@@ -32,12 +35,7 @@ class App
 		foreach($args as $arg) {
 			$route->add_handler($arg);
 		}
-		if($name) {
-			$this->routes[$name] = $route;
-		}
-		else {
-			$this->routes[] = $route;
-		}
+		$this->routes[$name] = $route;
 		return $route;
 	}
 
@@ -84,7 +82,7 @@ class App
 					echo $output;
 				}
 				else {
-					header('HTTP/1.1 404 Not Found');
+					$this->header('HTTP/1.1 404 Not Found');
 					echo $response->render('404.php');
 				}
 			}
@@ -92,8 +90,13 @@ class App
 		}
 		catch(\Exception $e) {
 			$response['error'] = $e;
-			header('HTTP/1.1 500 Internal Server Error');
-			echo $response->render('error.php');
+			$this->header('HTTP/1.1 500 Internal Server Error');
+			if($response instanceof Response) {
+				echo $response->render('error.php');
+			}
+			else {
+				var_dump($e);
+			}
 		}
 	}
 
@@ -108,7 +111,7 @@ class App
 
 	public function request($url) {
 		$_SERVER['REQUEST_URI'] = $url;
-		$this->run();
+		return $this->run();
 	}
 
 	public function share($object_name, Callable $callback) {
