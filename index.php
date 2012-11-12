@@ -7,8 +7,8 @@ use \Microsite\Request;
 use \Microsite\DB;
 use \Microsite\Handler;
 
-//include 'src/microsite.phar';
-include 'src/stub2.php';
+include 'src/microsite.phar';
+//include 'src/stub2.php';
 
 $app = new App();
 
