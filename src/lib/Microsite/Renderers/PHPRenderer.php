@@ -2,7 +2,7 @@
 
 namespace Microsite\Renderers;
 
-use Microsite\Renderers\Renderer;
+use \Microsite\Renderers\Renderer;
 
 class PHPRenderer extends Renderer
 {

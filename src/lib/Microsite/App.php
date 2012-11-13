@@ -90,6 +90,7 @@ class App
 			foreach($this->routes as $route) {
 				if($route->match($request)) {
 					$request['_route'] = $route;
+					$response['_app'] = $this;
 					$result = $route->run($response, $request, $this);
 					if($result) {
 						$output = (string) $result;
