@@ -4,7 +4,7 @@ use \Microsite\App;
 use \Microsite\Regex;
 use \Microsite\Response;
 use \Microsite\Request;
-use \Microsite\DB;
+use \Microsite\DB\PDO\DB;
 use \Microsite\Handler;
 
 include 'src/microsite.phar';
@@ -260,6 +260,8 @@ $app->share('db', function() {
 
 $app->route('database', '/database', function(Response $response, $request, $app) {
 	$samples = $app->db()->results('SELECT * FROM sample ORDER BY age ASC;');
+	header('content-type: text/plain'); print_r($samples); print_r(count($samples[0])); die();
+
 	$response['output'] = $response->partial('table.php', array('results' => $samples));
 	return $response->render('debug.php');
 });

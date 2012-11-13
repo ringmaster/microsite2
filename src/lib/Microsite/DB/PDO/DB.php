@@ -1,6 +1,6 @@
 <?php
 
-namespace Microsite;
+namespace Microsite\DB\PDO;
 
 use \PDO;
 
@@ -39,7 +39,7 @@ class DB extends PDO
 		}
 	}
 
-	public function results($query, $args = array(), $class_name = '\Microsite\Model')
+	public function results($query, $args = array(), $class_name = '\Microsite\DB\PDO\Model')
 	{
 		$this->fetch_class = $class_name;
 		if($this->query($query,$args)) {
@@ -50,7 +50,7 @@ class DB extends PDO
 		}
 	}
 
-	public function row($query, $args = array(), $class_name = '\Microsite\Model')
+	public function row($query, $args = array(), $class_name = '\Microsite\DB\PDO\Model')
 	{
 		$this->fetch_class = $class_name;
 
