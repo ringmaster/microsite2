@@ -21,8 +21,6 @@ class AppTest extends \PHPUnit_Framework_TestCase
 	{
 		parent::setUp();
 
-		ob_start();
-
 		$this->app = new App;
 	}
 
@@ -32,7 +30,6 @@ class AppTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function tearDown()
 	{
-		header_remove();
 		parent::tearDown();
 	}
 
