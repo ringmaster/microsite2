@@ -37,10 +37,10 @@
 
 	<!-- Target: test -->
 	<target name="test">
-		<phpunit bootstrap="tests/bootstrap.php">
+		<phpunit bootstrap="../tests/bootstrap.php">
 			<formatter type="plain" usefile="false" />
 			<batchtest>
-				<fileset dir="tests/units">
+				<fileset dir="../tests/units">
 					<include name="*Test*.php" />
 				</fileset>
 			</batchtest>
@@ -49,15 +49,15 @@
 
 	<!-- Target: test coverage -->
 	<target name="test coverage">
-		<coverage-setup database="tests/reports/coverage.db">
+		<coverage-setup database="../tests/reports/coverage.db">
 			<fileset dir="lib">
 				<include name="**/*.php" />
 			</fileset>
 		</coverage-setup>
-		<phpunit bootstrap="tests/bootstrap.php" codecoverage="true">
+		<phpunit bootstrap="../tests/bootstrap.php" codecoverage="true">
 			<formatter type="plain" usefile="false" />
 			<batchtest>
-				<fileset dir="tests/units">
+				<fileset dir="../tests/units">
 					<include name="*Test*.php" />
 				</fileset>
 			</batchtest>
