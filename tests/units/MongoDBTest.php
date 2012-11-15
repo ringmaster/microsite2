@@ -57,8 +57,9 @@ class MongoDBTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->db->insert('test', ['a' => 1, 'b' => 2]);
 		$this->db->insert('test', ['a' => 3, 'b' => 4]);
-		$cursor = $this->db->find('test', ['a' => 1]);
-		$result = iterator_to_array($cursor);
+		$cursor = $this->db->find('test', ['a' => 3]);
+		$results = iterator_to_array($cursor);
+		$result = reset($results);
 		$this->assertEquals(4, $result['b']);
 	}
 
