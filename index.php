@@ -266,6 +266,28 @@ $app->route('database', '/database', function(Response $response, $request, $app
 });
 
 /**
+ * On-demand mongo
+ */
+$app->share('mongo', function() {
+	return new \Microsite\DB\Mongo\DB('sample');
+});
+
+$app->route('mongo', '/mongo', function(Response $response, $request, $app) {
+	/** @var \Microsite\DB\Mongo\DB $mongo  */
+	$mongo = $app->mongo();
+
+	$samples = iterator_to_array($mongo->find('test'));
+
+	$response['output'] = $response->partial('table.php', array('results' => $samples));
+	return $response->render('debug.php');
+});
+
+/**
+ * Display a phpinfo
+ */
+$app->route('phpinfo', '/phpinfo', function(){ phpinfo(); });
+
+/**
  * Run the app to match and dispatch routes
  */
 $app();
