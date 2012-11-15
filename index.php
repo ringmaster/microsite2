@@ -269,7 +269,7 @@ $app->route('database', '/database', function(Response $response, $request, $app
  * On-demand mongo
  */
 $app->share('mongo', function() {
-	return new \Microsite\DB\Mongo\DB('sample');
+	return new \Microsite\DB\Mongo\DB('samplez');
 });
 
 $app->route('mongo', '/mongo', function(Response $response, $request, $app) {

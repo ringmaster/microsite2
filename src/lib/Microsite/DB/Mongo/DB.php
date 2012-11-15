@@ -104,8 +104,8 @@ class DB
 	 * @param array $options
 	 * @return \MongoCursor
 	 **/
-	public function find($collection, $query = array(), $options = array()) {
-		$collection = $this->database->selectCollection($collection);
+	public function find($collection_name, $query = array(), $options = array()) {
+		$collection = $this->database->selectCollection($collection_name);
 		$fields = isset($options['fields']) ? $options['fields'] : [];
 		$cursor = $collection->find($query, $fields);
 		if (isset($options['sort']) && $options['sort'] !== null) {
@@ -220,9 +220,9 @@ class DB
 		return $col->save($data);
 	}
 
-	static function insert($collection, $data) {
-		$col = self::getCollection($collection);
-		return $col->insert($data);
+	public function insert($collection_name, $data, $options = array()) {
+		$collection = $this->database->selectCollection($collection_name);
+		return $collection->insert($data, $options);
 	}
 
 	static function lastError($collection = null, $read_only = false) {
@@ -306,9 +306,10 @@ class DB
 	 * @param string $collection
 	 * @return boolean
 	 **/
-	static function drop($collection) {
-		$col = self::getCollection($collection);
-		return $col->drop();
+	public function drop($collection_name) {
+		$collection = $this->database->selectCollection($collection_name);
+		var_dump($collection);
+		return $collection->drop();
 	}
 
 	/**

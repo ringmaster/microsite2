@@ -4,3 +4,5 @@ php:
 script: phpunit --configuration tests/phpunit.xml --coverage-text
 notifications:
   irc: "irc.freenode.org#microsite"
+services:
+  - mongodb
