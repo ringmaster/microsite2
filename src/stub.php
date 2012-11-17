@@ -1,9 +1,14 @@
 <?php
 
+// Disable the static web routeing of this phar from an including file by defining NO_STATIC_WEB, if necessary
 if(defined('NO_STATIC_WEB')) {
 	Phar::mapPhar('microsite.phar');
 }
 else {
+	/**
+	 * Rewrite a direct request to an internal file
+	 * @return string The rewritten URL filename
+	 */
 	function microsite_rewrite() {
 		$r = $_SERVER['REQUEST_URI'];
 		if(strpos($r, '/microsite.phar') !== false) {
@@ -16,6 +21,7 @@ else {
 			return 'index.php';
 		}
 	}
+
 	$index = str_replace('\\', DIRECTORY_SEPARATOR, 'index.php');
 	$fourohfour = str_replace('\\', DIRECTORY_SEPARATOR, '404.php');
 	$mimes = array(
@@ -62,6 +68,15 @@ else {
 	);
 	Phar::webPhar("microsite.phar", 'index.php', '404.php', $mimes, 'microsite_rewrite');
 }
+
+// Make sure the autoloader is loaded
 include 'phar://microsite.phar/lib/Microsite/Autoloader.php';
+
+// Initialize the autoloader class
 \Microsite\Autoloader::init();
+
+// If we're running on the console, do other useful things
+if( php_sapi_name() == 'cli' ) {
+	\Microsite\Console::run();
+}
 __HALT_COMPILER();
