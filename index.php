@@ -288,6 +288,20 @@ $app->route('mongo', '/mongo', function(Response $response, $request, $app) {
 $app->route('phpinfo', '/phpinfo', function(){ phpinfo(); });
 
 /**
+ * Show a sequence of Tinycodes
+ */
+$app->route('tinycode', '/tiny', function(){
+	\Microsite\Tinycode::init();
+	header('content-type: text/plain');
+	echo 'Total codes: ' . \Microsite\Tinycode::max_int() . "\n";
+	for($z = 1; $z <=300; $z++) {
+		$s = \Microsite\Tinycode::to_code($z);
+		$n = \Microsite\Tinycode::to_int($s);
+		echo $z . ' encoded => ' . $s . ' decoded => ' . $n . "\n";
+	}
+});
+
+/**
  * Run the app to match and dispatch routes
  */
 $app();
