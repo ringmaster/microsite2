@@ -1,8 +1,18 @@
 <?php
 
+/**
+ * Microsite - Tinycode
+ *
+ * @namespace Microsite
+ * @php >= 5.4
+ */
 namespace Microsite;
 
-class Tinycode {
+/**
+ * Tinycode produces non-obvious, non-repeating codes for integer values and decodes them
+ */
+class Tinycode
+{
 
 	private static $digits = [];
 	public static $acceptable_chars = 'bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWZ0123456789';

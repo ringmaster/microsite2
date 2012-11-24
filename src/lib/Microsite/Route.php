@@ -74,7 +74,7 @@ class Route
 		return $this->validate(function() use($method) { return in_array($_SERVER['REQUEST_METHOD'], $method); });
 	}
 
-	public function build($vars) {
+	public function build($vars = []) {
 		return $this->url->build($vars);
 	}
 

@@ -61,11 +61,30 @@ class Response extends \ArrayObject
 	public function render($view = null) {
 		$vars = $this->getArrayCopy();
 		$vars['_response'] = $this;
+		$vars['get_route'] = function($name, $vars = []){return $this->properties['app']->get_route($name)->build($vars);};
 
 		if(!isset($view)) {
 			$view = 'No view or output method was set for this request.';
 		}
 		return $this->partial($view, $vars);
+	}
+
+	/**
+	 * Render an array of templates in order, with an optional wrapper
+	 * @param array $templates An array of template names or functions
+	 * @param null|callable|string $wrapper An optional template name or function
+	 * @return string The output of the built templates
+	 */
+	public function build($templates, $wrapper = null) {
+		$output = '';
+		foreach($templates as $template) {
+			$content = $this->render($template);
+			if(!is_null($wrapper)) {
+				$content = $this->partial($wrapper, ['content' => $content]);
+			}
+			$output .= $content;
+		}
+		return $output;
 	}
 
 	/**

@@ -14,19 +14,19 @@ class App
 	 * Constructor for App
 	 */
 	public function __construct() {
-		$this->defaults = [
-			'renderer' => new DIObject(function() {
+		$this->share('renderer', function() {
 				$template_dirs = $this->template_dirs;
 				if(!is_array($template_dirs)) {
 					$template_dirs = [$template_dirs];
 				}
 				$template_dirs = array_merge($template_dirs, [__DIR__ . '/Views']);
-				return \Microsite\Renderers\PHPRenderer::create($template_dirs);
-			}, true),
-			'header' => new DIObject(function($header, $replace = null, $http_response_code = null){
+				return \Microsite\Renderers\PHPRenderer::create($template_dirs, $this);
+			}
+		);
+		$this->demand('header', function($header, $replace = null, $http_response_code = null){
 				header($header, $replace, $http_response_code);
-			}),
-		];
+			}
+		);
 	}
 
 
@@ -60,6 +60,17 @@ class App
 	}
 
 	/**
+	 * Return a built URL string for a named route and parameters
+	 * @param string $name The name of a route
+	 * @param array $args An array of optional parameters for the route build
+	 * @return string The URL built from the provided parameters
+	 */
+	public function get_url($name, $args = []) {
+		$result = isset($this->routes[$name]) ? $this->routes[$name] : null;
+		return isset($result) ? $result->build($args) : '';
+	}
+
+	/**
 	 * Run the app, parsing the requested URL and dispatching to the appropriate Route
 	 * @param Request|null $request A Request to process, if null, default to $_SERVER['REQUEST_URI']
 	 * @param Response|null $response A Response to render to
@@ -80,6 +91,7 @@ class App
 			if(is_null($response)) {
 				$response = new Response([
 					'renderer' => $this->renderer(),
+					'app' => $this,
 				]);
 				$null_response = true;
 			}
@@ -179,11 +191,9 @@ class App
 	public function __call($name, $args) {
 		if(isset($this->objects[$name])) {
 			$call_object = $this->objects[$name];
+			return $call_object->invoke($args);
 		}
-		elseif(isset($this->defaults[$name])) {
-			$call_object = $this->defaults[$name];
-		}
-		return $call_object->invoke($args);
+		return null;
 	}
 
 }

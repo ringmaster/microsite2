@@ -13,14 +13,20 @@ abstract class Renderer
 	protected $template_dirs = array();
 
 	/**
+	 * @var \Microsite\App $app A reference to the App using this Renderer
+	 */
+	protected $app = null;
+
+	/**
 	 * Create a new Renderer, configuring its template directories
 	 * @param string|array $template_dirs A template directory or an array of potential directories
 	 */
-	public function __construct($template_dirs) {
+	public function __construct($template_dirs, \Microsite\App $app) {
 		if(!is_array($template_dirs)) {
 			$template_dirs = array($template_dirs);
 		}
 		$this->template_dirs = $template_dirs;
+		$this->app = $app;
 	}
 
 	/**
@@ -42,4 +48,14 @@ abstract class Renderer
 	 * @return mixed The result of the rendering operation
 	 */
 	public abstract function render($template, $vars);
+
+	/**
+	 * Pass undefined methods on this renderer up to the App
+	 * @param string $name A method name
+	 * @param array $args An array of arguments
+	 * @return mixed The result of the call on App
+	 */
+	public function __call($name, $args) {
+		return call_user_func_array(array($this->app, $name), $args);
+	}
 }
