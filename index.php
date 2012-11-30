@@ -1,11 +1,14 @@
 <?php
 
-use \Microsite\App;
-use \Microsite\Regex;
-use \Microsite\Response;
-use \Microsite\Request;
-use \Microsite\DB\PDO\DB;
-use \Microsite\Handler;
+use Microsite\App;
+use Microsite\Regex;
+use Microsite\Response;
+use Microsite\Request;
+use Microsite\DB\PDO\DB;
+use Microsite\Handler;
+use Microsite\Tinycode;
+use Microsite\Renderers\JSONRenderer;
+use Microsite\DB\Mongo\DB as MongoDB;
 
 include 'src/microsite.phar';
 //include 'src/stub2.php';
@@ -21,8 +24,8 @@ $app->template_dirs = [
  * Basic home page.
  * Set the view to a home.php view provided in the view directory
  */
-$app->route('home', '/', function(Response $response) {
-	return $response->render('home.php');
+$app->route('home', '/', function(App $app) {
+	return $app->response()->render('home.php');
 });
 
 /**
@@ -43,21 +46,21 @@ $app->route('echo', '/echo', function() {
 /**
  * Route with a parameter
  */
-$app->route('hello', '/hello/:name', function(Response $response, Request $request) {
+$app->route('hello', '/hello/:name', function(Request $request) {
 	echo "Hello {$request['name']}!";
 });
 
 /**
  * Route with a validated parameter
  */
-$app->route('count', '/count/:number', function(Response $response, Request $request) {
+$app->route('count', '/count/:number', function(Request $request) {
 	echo "This is a number: {$request['number']}";
 })->validate_fields(['number' => '[0-9]+']);
 
 /**
  * Route with a validated parameter function, only /valid/ok correctly routes here
  */
-$app->route('valid', '/valid/:valid', function(Response $response, Request $request) {
+$app->route('valid', '/valid/:valid', function(Request $request) {
 	echo "This is a valid route: {$request['valid']}";
 })->validate_fields(['valid' => function($value) {return ($value == 'ok');}]);
 
@@ -68,15 +71,16 @@ $app
 	->route(
 		'user',
 		'/user/:user',
-		function(Response $response, Request $request) {
-			echo "The requested user's name is: {$request['user']->name}";
+		function(Request $request, Response $response) {
+			$response['output'] = '<pre>' . print_r($request['user'], 1) . '</pre>';
+			return $response->render('debug.php');
 		}
 	)
 	->validate_fields([':user' => '\d+'])
 	->convert('user', function($user_id){
 		$user = new stdClass(); // Simulate getting a database record.
 		$user->id = $user_id;
-		$user->name = 'Test User';
+		$user->name = 'Test User #' . $user_id;
 		return $user;
 	});
 
@@ -86,12 +90,12 @@ $app
 $app->route(
 	'evenodd',
 	'/evenodd/:number',
-	function(Response $response, Request $request) {
+	function(Request $request) {
 		if($request['number'] % 2 == 0) {
 			echo "This is an even number";
 		}
 	},
-	function(Response $response, Request $request) {
+	function(Request $request) {
 		if($request['number'] % 2 == 1) {
 			echo "This is an odd number";
 		}
@@ -102,7 +106,7 @@ $app->route(
 /**
  * Use the route system to produce the url to the named route "hello"
  */
-$app->route('interior', '/interior', function(Response $response, Request $request, App $app) {
+$app->route('interior', '/interior', function(Response $response, $app) {
 	$response['output'] = $app->get_route('hello')->build(['name' => 'User']);
 	return $response->render('debug.php');
 });
@@ -111,7 +115,7 @@ $app->route('interior', '/interior', function(Response $response, Request $reque
 /**
  * A simple custom Handler class
  */
-class MyHandler extends \Microsite\Handler {
+class MyHandler extends Handler {
 	public $prerequisite;
 
 	public function handler_one() {
@@ -162,7 +166,7 @@ FORM_HTML;
 $app->route(
 	'form_post',
 	'/form',
-	function($response) {
+	function(Response $response) {
 		if(trim($_POST['name']) == '') {
 			$response->redirect('/form');
 		}
@@ -212,7 +216,7 @@ $admin = new App();
  * Within the admin app, create a /plugins URL
  * Output a message using the internal debug.php template
  */
-$admin->route('plugins', '/plugins', function(Response $response) {
+$admin->route('plugins', '/plugins', function() {
 	echo "This is the Plugins page";
 });
 
@@ -239,13 +243,14 @@ $app->demand('mockdb', function($param) {
  * Note that the mockdb objects are the different because it was registered with ->demand()
  * If it was registered with ->share() it would be created only once
  */
-$app->route('json', '/json', function(Response $response, Request $request, App $app) {
+$app->route('json', '/json', function(App $app) {
+	$response = $app->response();
 	$response['user'] = 'Owen';
 	$response['user_id'] = 1;
 	$response['registered'] = true;
 	$response['mockdb_obj'] = $app->mockdb(1);
 	$response['mockdb_obj2'] = $app->mockdb(16);
-	$response->set_renderer(\Microsite\Renderers\JSONRenderer::create(''));
+	$response->set_renderer(JSONRenderer::create('', $app));
 	return $response->render();
 });
 
@@ -258,7 +263,8 @@ $app->share('db', function() {
 	return $db;
 });
 
-$app->route('database', '/database', function(Response $response, $request, $app) {
+$app->route('database', '/database', function(App $app) {
+	$response = $app->response();
 	$samples = $app->db()->results('SELECT * FROM sample ORDER BY age ASC;');
 
 	$response['output'] = $response->partial('table.php', array('results' => $samples));
@@ -269,10 +275,11 @@ $app->route('database', '/database', function(Response $response, $request, $app
  * On-demand mongo
  */
 $app->share('mongo', function() {
-	return new \Microsite\DB\Mongo\DB('samplez');
+	return new MongoDB('samplez');
 });
 
-$app->route('mongo', '/mongo', function(Response $response, $request, $app) {
+$app->route('mongo', '/mongo', function(App $app) {
+	$response = $app->response();
 	/** @var \Microsite\DB\Mongo\DB $mongo  */
 	$mongo = $app->mongo();
 
@@ -291,12 +298,12 @@ $app->route('phpinfo', '/phpinfo', function(){ phpinfo(); });
  * Show a sequence of Tinycodes
  */
 $app->route('tinycode', '/tiny', function(){
-	\Microsite\Tinycode::init();
+	Tinycode::init();
 	header('content-type: text/plain');
-	echo 'Total codes: ' . \Microsite\Tinycode::max_int() . "\n";
+	echo 'Total codes: ' . Tinycode::max_int() . "\n";
 	for($z = 1; $z <=300; $z++) {
-		$s = \Microsite\Tinycode::to_code($z);
-		$n = \Microsite\Tinycode::to_int($s);
+		$s = Tinycode::to_code($z);
+		$n = Tinycode::to_int($s);
 		echo $z . ' encoded => ' . $s . ' decoded => ' . $n . "\n";
 	}
 });

@@ -45,12 +45,12 @@ class AppTest extends \PHPUnit_Framework_TestCase
 		$app = new App();
 		$this->assertInstanceOf('\Microsite\App', $app);
 
-		$app->route('test', '/test', function($response) {
+		$app->route('test', '/test', function(Response $response) {
 			$response['output'] = 'pass';
 			return $response->render(function($vars) { return $vars['output']; });
 		});
 
-		$this->assertEquals('pass', $app->request('/test'));
+		$this->assertEquals('pass', $app->simulate_request('/test'));
 
 
 		/** @var App $app2  */
@@ -58,11 +58,11 @@ class AppTest extends \PHPUnit_Framework_TestCase
 		$app2 = new App();
 		$app2->template_dirs = BOOTSTRAP_DIR . '/data';
 
-		$app2->route('test', '/test', function($response) {
+		$app2->route('test', '/test', function(Response $response) {
 			return $response->render('test.php');
 		});
 
-		$this->assertEquals('test', $app2->request('/test'));
+		$this->assertEquals('test', $app2->simulate_request('/test'));
 
 	}
 
@@ -133,7 +133,7 @@ class AppTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->app->route('name', '/test', function(){ return 'ok'; });
 
-		$this->app->request('/test');
+		$this->app->simulate_request('/test');
 		$this->assertEquals('ok', $this->app->run());
 	}
 
@@ -201,7 +201,7 @@ class AppTest extends \PHPUnit_Framework_TestCase
 		 */
 		$this->app->route('layer', '/layer', $layer);
 
-		$this->assertEquals('test', $this->app->request('/layer/test'));
+		$this->assertEquals('test', $this->app->simulate_request('/layer/test'));
 	}
 
 	public function test500()
@@ -209,7 +209,7 @@ class AppTest extends \PHPUnit_Framework_TestCase
 		$this->app->route('500', '/500', function(){ throw new \Exception('Test Exception for 500'); });
 
 		$this->app->demand('header', function($header) use (&$headers_list) { $headers_list[] = $header; });
-		$this->app->request('/500');
+		$this->app->simulate_request('/500');
 
 		var_dump($headers_list);
 		$this->assertNotEmpty($headers_list);

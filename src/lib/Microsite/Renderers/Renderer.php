@@ -5,6 +5,8 @@ namespace Microsite\Renderers;
 /**
  * Abstract class for implementing a renderer of output
  */
+use Microsite\App;
+
 abstract class Renderer
 {
 	/**
@@ -21,7 +23,7 @@ abstract class Renderer
 	 * Create a new Renderer, configuring its template directories
 	 * @param string|array $template_dirs A template directory or an array of potential directories
 	 */
-	public function __construct($template_dirs, \Microsite\App $app) {
+	public function __construct($template_dirs, App $app) {
 		if(!is_array($template_dirs)) {
 			$template_dirs = array($template_dirs);
 		}

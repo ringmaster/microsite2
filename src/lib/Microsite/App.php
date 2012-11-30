@@ -9,6 +9,7 @@ class App
 	private $objects = array();
 	public $template_dirs = array();
 	protected $defaults = array();
+	public $route = null;
 
 	/**
 	 * Constructor for App
@@ -27,6 +28,23 @@ class App
 				header($header, $replace, $http_response_code);
 			}
 		);
+		$this->share('request', function($request = null) {
+			if(is_null($request)) {
+				return new Request([
+					'url' => isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '',
+				]);
+			}
+			return $request;
+		});
+		$this->share('response', function($response = null) {
+			if(is_null($response)) {
+				return new Response([
+					'renderer' => $this->renderer(),
+					'app' => $this,
+				]);
+			}
+			return $response;
+		});
 	}
 
 
@@ -72,38 +90,28 @@ class App
 
 	/**
 	 * Run the app, parsing the requested URL and dispatching to the appropriate Route
-	 * @param Request|null $request A Request to process, if null, default to $_SERVER['REQUEST_URI']
-	 * @param Response|null $response A Response to render to
 	 * @param App|null $parent
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
-	public function run($request = null, $response = null, $parent = null) {
+	public function run() {
 		try {
-			$null_response = false;
+			$do_output = false;
 			$has_output = false;
 
-			if(is_null($request)) {
-				$request = new Request([
-					'url' => $_SERVER['REQUEST_URI'],
-				]);
-			}
+			$request = $this->request();
+			$response = $this->response();
 
-			if(is_null($response)) {
-				$response = new Response([
-					'renderer' => $this->renderer(),
-					'app' => $this,
-				]);
-				$null_response = true;
+			if(!$response->did_output) {
+				$response->did_output = true;
+				$do_output = true;
 			}
-
-			$this->parent = $parent;
 
 			$output = false;
 			foreach($this->routes as $route) {
+				/** @var Route $route */
 				if($route->match($request)) {
-					$request['_route'] = $route;
-					$response['_app'] = $this;
-					$result = $route->run($response, $request, $this);
+					$this->route = $route;
+					$result = $route->run($this);
 					if($result) {
 						$output = (string) $result;
 						$has_output = true;
@@ -112,7 +120,7 @@ class App
 				}
 			}
 
-			if($null_response) {
+			if($do_output) {
 				if($has_output) {
 					echo $output;
 				}
@@ -138,18 +146,15 @@ class App
 	/**
 	 * Allow this object to be executed directly
 	 * Example:  $app = new App();  $app();
-	 * @param Response|null $response A Response to render to
-	 * @param Request|null $request A Request to process, if null, default to $_SERVER['REQUEST_URI']
 	 * @param App|null $parent
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
-	public function __invoke(Response $response = null, Request $request = null, App $app = null) {
+	public function __invoke() {
+		$request = $this->request();
 		if(isset($request['match_url'])) {
-			$request = new Request([
-				'url' => $request['match_url'],
-			]);
+			$request['url'] = $request['match_url'];
 		}
-		return $this->run($request, $response, $app);
+		return $this->run();
 	}
 
 	/**
@@ -157,7 +162,7 @@ class App
 	 * @param string $url The URL request to simulate
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
-	public function request($url) {
+	public function simulate_request($url) {
 		$_SERVER['REQUEST_URI'] = $url;
 		return $this->run();
 	}
@@ -181,6 +186,38 @@ class App
 	}
 
 	/**
+	 * Get the Request object to use with this App
+	 * @return Request The request object for this App
+	 */
+	public function request() {
+		return $this->dispatch_object('request', []);
+	}
+
+	/**
+	 * Get the Response object to use with this App
+	 * @return Response The response object for this App
+	 */
+	public function response() {
+		return $this->dispatch_object('response', []);
+	}
+
+	/**
+	 * Internal method to invoke registered dependency injections
+	 * @see App::share
+	 * @see App::demand
+	 * @param string $name The name of the method that was called on this object instance
+	 * @param array $args The arguments that were used in the call
+	 * @return mixed The result of the dependency injection or the default methods (added in App::__construct)
+	 */
+	protected function dispatch_object($name, $args) {
+		if(isset($this->objects[$name])) {
+			$call_object = $this->objects[$name];
+			return $call_object->invoke($args);
+		}
+		return null;
+	}
+
+	/**
 	 * Magic method __call(), used to invoke registered dependency injections
 	 * @see App::share
 	 * @see App::demand
@@ -189,11 +226,7 @@ class App
 	 * @return mixed The result of the dependency injection or the default methods (added in App::__construct)
 	 */
 	public function __call($name, $args) {
-		if(isset($this->objects[$name])) {
-			$call_object = $this->objects[$name];
-			return $call_object->invoke($args);
-		}
-		return null;
+		return $this->dispatch_object($name, $args);
 	}
 
 }

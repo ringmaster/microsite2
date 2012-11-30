@@ -17,7 +17,7 @@ class Handler
 	 * @return callable A Closure used in a call to App::Route() that is used as a handler
 	 */
 	public static function handle($class, $method) {
-		$fn = function(Response $response, Request $request, App $app) use($class, $method) {
+		$fn = function(App $app) use($class, $method) {
 			if(isset(Handler::$instances[$class])) {
 				$handler_obj = Handler::$instances[$class];
 			}
@@ -26,7 +26,7 @@ class Handler
 				$handler_obj = $r_class->newInstanceArgs();
 				Handler::$instances[$class] = $handler_obj;
 			}
-			return $handler_obj->$method($response, $request, $app);
+			return $handler_obj->$method($app);
 		};
 		return $fn;
 	}

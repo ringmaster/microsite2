@@ -19,6 +19,7 @@
 	<li><a href="/hiya/user">Regex route</a></li>
 	<li><a href="/valid/ok">Use function validation on a route parameter (passes)</a></li>
 	<li><a href="/valid/bad">Use function validation on a route parameter (fails)</a></li>
+	<li><a href="/user/4">Convert a URL parameter into a useful object</a></li>
 	<li><a href="/number/4">Validate only even arguments</a></li>
 	<li><a href="/number/3">Validate only odd arguments</a></li>
 	<li><a href="/admin/plugins">Layered plugins URL into admin app URL</a></li>

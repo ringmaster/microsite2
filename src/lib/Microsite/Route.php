@@ -2,7 +2,10 @@
 
 namespace Microsite;
 
-class Route 
+use ReflectionFunction;
+use ReflectionClass;
+
+class Route
 {
 	private $url;
 	private $handlers = array();
@@ -88,7 +91,7 @@ class Route
 	 * @param Request $request
 	 * @return bool True if this route matches the Request
 	 */
-	public function match(Request $request) {
+	public function match(Request &$request) {
 		$match = false;
 
 		$match_url = $request['url'];
@@ -111,12 +114,36 @@ class Route
 		return $match;
 	}
 
-	public function run(Response $response, Request $request, App $app) {
+	public function run(App $app) {
 		foreach($this->handlers as $handler) {
 			$result = false;
 			ob_start();
 			if(is_callable($handler)) {
-				$result = $handler($response, $request, $app);
+				// Do some magic...
+				$rf = new ReflectionFunction($handler);
+				$params = $rf->getParameters();
+				$exec_params = [];
+				// @todo Should probably cache these, if possible...
+				foreach($params as $param) {
+					$param_class = $param->getClass();
+					$param_type = '';
+					if($param_class instanceof ReflectionClass) {
+						$param_type = $param_class->getName();
+					}
+					switch($param_type) {
+						case 'Microsite\Request':
+							$exec_params[] = $app->request();
+							break;
+						case 'Microsite\Response':
+							$exec_params[] = $app->response();
+							break;
+						default:
+							$exec_params[] = $app;
+							break 2;
+					}
+				}
+
+				$result = call_user_func_array($handler, $exec_params);
 			}
 //			elseif($handler instanceof App) {
 //				$result = $handler->run($request, $response, $app);

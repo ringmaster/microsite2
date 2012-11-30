@@ -5,6 +5,7 @@ namespace Microsite;
 class Response extends \ArrayObject
 {
 	private $properties = [];
+	public $did_output = false;
 
 	/**
 	 * Create a Response object and store its properties
@@ -61,6 +62,7 @@ class Response extends \ArrayObject
 	public function render($view = null) {
 		$vars = $this->getArrayCopy();
 		$vars['_response'] = $this;
+		$vars['_app'] = $this->properties['app'];
 		$vars['get_route'] = function($name, $vars = []){return $this->properties['app']->get_route($name)->build($vars);};
 
 		if(!isset($view)) {
