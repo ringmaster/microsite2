@@ -76,7 +76,12 @@ include 'phar://microsite.phar/lib/Microsite/Autoloader.php';
 \Microsite\Autoloader::init();
 
 // If we're running on the console, do other useful things
-if( php_sapi_name() == 'cli' ) {
-	\Microsite\Console::run();
+switch(php_sapi_name()) {
+	case 'cli':
+		\Microsite\Console::run();
+		break;
+	case 'cli-server':
+		// This is what executes when the app is run from the PHP-based server.
+		break;
 }
 __HALT_COMPILER();

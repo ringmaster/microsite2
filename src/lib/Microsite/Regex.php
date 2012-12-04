@@ -5,8 +5,8 @@ namespace Microsite;
 class Regex extends RouteMatcher
 {
 	protected $regex;
-	protected $validations;
-	protected $conversions = array();
+	protected $validations = [];
+	protected $conversions = [];
 
 	public function __construct($regex) {
 		$this->regex = $regex;
