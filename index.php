@@ -195,15 +195,15 @@ $app->route('hiya', new Regex('#/hiya/(?P<name>.+)/?$#'), function(Response $res
 /**
  * Only accept even arguments in the URL
  */
-$app->route('even', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function() {
-	echo "The number was even.";
+$app->route('even', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(Request $request) {
+	echo "The number {$request['number']} was even.";
 })->validate(function($request) { return $request['number'] % 2 == 0;});
 
 /**
  * Only accept odd arguments in the URL
  */
-$app->route('odd', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function() {
-	echo "The number was odd.";
+$app->route('odd', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(Request $request) {
+	echo "The number {$request['number']} was odd.";
 })->validate(function($request) { return $request['number'] % 2 == 1;});
 
 

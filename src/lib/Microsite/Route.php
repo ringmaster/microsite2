@@ -91,8 +91,10 @@ class Route
 	 * @param Request $request
 	 * @return bool True if this route matches the Request
 	 */
-	public function match(Request &$request) {
+	public function match(App $app) {
 		$match = false;
+
+		$request = $app->request();
 
 		$match_url = $request['url'];
 		if(isset($request['match_url'])) {
@@ -120,29 +122,33 @@ class Route
 			ob_start();
 			if(is_callable($handler)) {
 				// Do some magic...
-				$rf = new ReflectionFunction($handler);
-				$params = $rf->getParameters();
 				$exec_params = [];
-				// @todo Should probably cache these, if possible...
-				foreach($params as $param) {
-					$param_class = $param->getClass();
-					$param_type = '';
-					if($param_class instanceof ReflectionClass) {
-						$param_type = $param_class->getName();
-					}
-					switch($param_type) {
-						case 'Microsite\Request':
-							$exec_params[] = $app->request();
-							break;
-						case 'Microsite\Response':
-							$exec_params[] = $app->response();
-							break;
-						default:
-							$exec_params[] = $app;
-							break 2;
+				if($handler instanceof App) {
+					$exec_params[] = $app;
+				}
+				else {
+					$rf = new ReflectionFunction($handler);
+					$params = $rf->getParameters();
+					// @todo Should probably cache these, if possible...
+					foreach($params as $param) {
+						$param_class = $param->getClass();
+						$param_type = '';
+						if($param_class instanceof ReflectionClass) {
+							$param_type = $param_class->getName();
+						}
+						switch($param_type) {
+							case 'Microsite\Request':
+								$exec_params[] = $app->request();
+								break;
+							case 'Microsite\Response':
+								$exec_params[] = $app->response();
+								break;
+							default:
+								$exec_params[] = $app;
+								break 2;
+						}
 					}
 				}
-
 				$result = call_user_func_array($handler, $exec_params);
 			}
 //			elseif($handler instanceof App) {

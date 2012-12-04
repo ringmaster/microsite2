@@ -36,12 +36,12 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 	{
 		$one = TestHandler::handle('\Microsite\TestHandler', 'handler_one');
 
-		$this->assertEquals('test', $one(new Response([]), new Request([]), new App()));
+		$this->assertEquals('test', $one(new App()));
 
 		$store = TestHandler::handle('\Microsite\TestHandler', 'store_value');
 		$two = TestHandler::handle('\Microsite\TestHandler', 'handler_two');
 
-		$store(new Response([]), new Request([]), new App());
-		$this->assertEquals('test', $two(new Response([]), new Request([]), new App()));
+		$store(new App());
+		$this->assertEquals('test', $two(new App()));
 	}
 }

@@ -17,6 +17,11 @@ class MongoDBTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
+		if (!extension_loaded('mongo')) {
+			$this->markTestSkipped(
+				'The MongoDB extension is not available.'
+			);
+		}
 		$this->db = new DB('unittest');
 	}
 

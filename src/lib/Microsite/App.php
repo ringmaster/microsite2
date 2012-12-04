@@ -109,7 +109,7 @@ class App
 			$output = false;
 			foreach($this->routes as $route) {
 				/** @var Route $route */
-				if($route->match($request)) {
+				if($route->match($this)) {
 					$this->route = $route;
 					$result = $route->run($this);
 					if($result) {
@@ -146,13 +146,13 @@ class App
 	/**
 	 * Allow this object to be executed directly
 	 * Example:  $app = new App();  $app();
-	 * @param App|null $parent
+	 * @param \Microsite\App|null $parent A parent App instance with relevant properties
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
-	public function __invoke() {
-		$request = $this->request();
-		if(isset($request['match_url'])) {
-			$request['url'] = $request['match_url'];
+	public function __invoke($app = null) {
+		if(isset($app)) {
+			$request = $app->request();
+			$this->request($request);
 		}
 		return $this->run();
 	}
@@ -187,18 +187,20 @@ class App
 
 	/**
 	 * Get the Request object to use with this App
+	 * @param Request|null $request A default or preset Request object
 	 * @return Request The request object for this App
 	 */
-	public function request() {
-		return $this->dispatch_object('request', []);
+	public function request($request = null) {
+		return $this->dispatch_object('request', [$request]);
 	}
 
 	/**
 	 * Get the Response object to use with this App
+	 * @param Response|null $response A default or preset Response object
 	 * @return Response The response object for this App
 	 */
-	public function response() {
-		return $this->dispatch_object('response', []);
+	public function response($response = null) {
+		return $this->dispatch_object('response', [$response]);
 	}
 
 	/**
