@@ -1,5 +1,6 @@
 # Microsite 2
 *A reincarnation of the Microsite framework.*
+[![Build Status](https://secure.travis-ci.org/ringmaster/microsite2.png?branch=master)](https://travis-ci.org/ringmaster/microsite2)
 
 ## Requirements
 
