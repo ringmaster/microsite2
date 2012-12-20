@@ -233,21 +233,21 @@ class DB
 	/**
 	 * Shortcut for MongoCollection's update() method
 	 *
-	 * @param string $collection
+	 * @param string $collection_name
 	 * @param array $criteria
 	 * @param array $newobj
-	 * @param boolean $upsert
+	 * @param bool|array $options
 	 * @return boolean
-	 **/
-	static function update($collection, $criteria, $newobj, $options = array()) {
-		$col = self::getCollection($collection);
+	 */
+	public function update($collection_name, $criteria, $newobj, $options = array()) {
+		$collection = $this->database->selectCollection($collection_name);
 		if ($options === true) {
 			$options = array('upsert' => true);
 		}
 		if (!isset($options['multiple'])) {
 			$options['multiple'] = false;
 		}
-		return $col->update($criteria, $newobj, $options);
+		return $collection->update($criteria, $newobj, $options);
 	}
 
 	static function updateConcurrent($collection, $criteria, $newobj, $options = array()) {
