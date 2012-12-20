@@ -59,6 +59,16 @@ class Tinycode
 		return $number;
 	}
 
+	public static function valid_code($value) {
+		$valid = strlen($value) == self::$length;
+		$digits = str_split($value);
+		for($index = 0; $index < count($digits); $index++) {
+			$valid = $valid && in_array($digits[$index], self::$digits[$index]);
+			if(!$valid) return $valid;
+		}
+		return $valid;
+	}
+
 	public static function max_int() {
 		$total = 1;
 		foreach(self::$digits as $digits) {
