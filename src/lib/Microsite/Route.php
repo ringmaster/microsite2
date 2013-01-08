@@ -10,13 +10,16 @@ class Route
 	private $url;
 	private $handlers = array();
 	private $validators = array();
+	private $orig_url;
 	public $name = '';
+	protected $types = null;
 
 	/**
 	 * Create a Route that can match a URL
 	 * @param string|RouteMatcher $url A string or RouteMatcher that can match a URL 
 	 */
 	public function __construct($url) {
+		$this->orig_url = $url;
 		if(is_string($url)) {
 			$url = new Segment($url);
 		}
@@ -83,6 +86,71 @@ class Route
 
 	public function convert($var, $fn) {
 		$this->url->convert($var, $fn);
+		return $this;
+	}
+
+	/**
+	 * @return RouteMatcher
+	 */
+	public function get_url() {
+		return $this->url;
+	}
+
+	public static function get_best_mime($mime_types = null) {
+		// Values will be stored in this array
+		static $accept_types = null;
+
+		if(empty($accept_types)) {
+			// Accept header is case insensitive, and whitespace isn't important
+			$accept = strtolower(str_replace(' ', '', $_SERVER['HTTP_ACCEPT']));
+			// divide it into parts in the place of a ","
+			$accept = explode(',', $accept);
+			foreach ($accept as $a) {
+				// the default quality is 1.
+				$q = 1;
+				// check if there is a different quality
+				if (strpos($a, ';q=')) {
+					// divide "mime/type;q=X" into two parts: "mime/type" and "X"
+					list($a, $q) = explode(';q=', $a);
+				}
+				// mime-type $a is accepted with the quality $q
+				// WARNING: $q == 0 means, that mime-type isn't supported!
+				$accept_types[$a] = $q;
+			}
+			arsort($accept_types);
+		}
+
+		// if no parameter was passed, just return parsed data
+		if (!$mime_types) {
+			return $accept_types;
+		}
+
+		$mime_types = array_map('strtolower', (array)$mime_types);
+
+		// let's check our supported types:
+		foreach ($accept_types as $mime => $q) {
+			if($q) {
+				if(in_array($mime, $mime_types)) {
+					return [$mime => floatval($q)];
+				}
+				if($mime == '*/*') {
+					return [reset($mime_types) => floatval($q)];
+				}
+			}
+		}
+		// no mime-type found
+		return null;
+	}
+
+	public function match_type() {
+		$mime_types = empty($this->types) ? ['text/html'] : $this->types;
+		$type_result = self::get_best_mime($mime_types);
+		$match_type = reset($type_result);
+		return $match_type;
+	}
+
+	public function type($type) {
+		$this->types[] = $type;
 		return $this;
 	}
 

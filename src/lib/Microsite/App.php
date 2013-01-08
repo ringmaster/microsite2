@@ -9,6 +9,7 @@ class App
 	private $objects = array();
 	public $template_dirs = array();
 	protected $defaults = array();
+	/** @var Route $route The route that the current request matched */
 	public $route = null;
 
 	/**
@@ -30,8 +31,9 @@ class App
 		);
 		$this->share('request', function($request = null) {
 			if(is_null($request)) {
+				$request_uri = explode('?', isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '')[0];
 				return new Request([
-					'url' => isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '',
+					'url' => $request_uri,
 				]);
 			}
 			return $request;
@@ -98,7 +100,6 @@ class App
 			$do_output = false;
 			$has_output = false;
 
-			$request = $this->request();
 			$response = $this->response();
 
 			if(!$response->did_output) {
@@ -109,14 +110,19 @@ class App
 			$output = false;
 			foreach($this->routes as $route) {
 				/** @var Route $route */
-				if($route->match($this)) {
+				if($route->match($this) && ($this->route == null || (
+					$this->route->match_type() < $route->match_type() &&
+					$this->route->get_url() == $route->get_url()
+				))) {
 					$this->route = $route;
-					$result = $route->run($this);
-					if($result) {
-						$output = (string) $result;
-						$has_output = true;
-						break;
-					}
+				}
+			}
+
+			if(isset($this->route)) {
+				$result = $this->route->run($this);
+				if($result) {
+					$output = (string) $result;
+					$has_output = true;
 				}
 			}
 

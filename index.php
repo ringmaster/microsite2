@@ -36,6 +36,11 @@ $app->route('string', '/string', function() {
 });
 
 /**
+ * Weird routing issue
+ */
+$app->route('inbound', '/inbound', function() { echo 'ok?'; });
+
+/**
  * Simple echo output.
  */
 $app->route('echo', '/echo', function() {
@@ -254,6 +259,19 @@ $app->route('json', '/json', function(App $app) {
 	return $response->render();
 });
 
+/**
+ * Create a basic test page for different accept header requests
+ */
+$app->route('accept', '/accept', function(Response $response) {
+	$response['message'] = 'The result of the demo appears here.  This is from HTML.';
+	return $response->render('accept.php');
+});
+
+$app->route('accecpt_json', '/accept', function(Response $response, App $app) {
+	$response->set_renderer(JSONRenderer::create('', $app));
+	$response['message'] = 'The result of the demo appears here.  This is from JSON.';
+	return $response;
+})->type('application/json');
 
 /**
  * Register an on-demand object with the app for a real database
