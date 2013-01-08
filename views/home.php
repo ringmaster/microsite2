@@ -23,7 +23,9 @@
 	<li><a href="/number/4">Validate only even arguments</a></li>
 	<li><a href="/number/3">Validate only odd arguments</a></li>
 	<li><a href="/admin/plugins">Layered plugins URL into admin app URL</a></li>
+	<li><a href="/markdown">Markdown sample</a></li>
 	<li><a href="/json">JSON Renderer and on-demand mockdb object</a></li>
+	<li><a href="/accept">Content negotiation sample</a></li>
 	<li><a href="/database">Database access</a></li>
 
 </ul>

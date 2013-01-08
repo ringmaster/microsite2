@@ -16,12 +16,16 @@ class App
 	 * Constructor for App
 	 */
 	public function __construct() {
+		$this->share('template_dirs', function() {
+			$template_dirs = $this->template_dirs;
+			if(!is_array($template_dirs)) {
+				$template_dirs = [$template_dirs];
+			}
+			$template_dirs = array_merge($template_dirs, [__DIR__ . '/Views']);
+			return $template_dirs;
+		});
 		$this->share('renderer', function() {
-				$template_dirs = $this->template_dirs;
-				if(!is_array($template_dirs)) {
-					$template_dirs = [$template_dirs];
-				}
-				$template_dirs = array_merge($template_dirs, [__DIR__ . '/Views']);
+				$template_dirs = $this->template_dirs();
 				return \Microsite\Renderers\PHPRenderer::create($template_dirs, $this);
 			}
 		);

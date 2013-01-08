@@ -11,7 +11,7 @@ class PHPRenderer extends Renderer
 			if(substr($view_path, -1, 1) != '/' && $template[0] != '/') {
 				$view_path .= '/';
 			}
-			$view_path .= $template;
+			$view_path .= str_replace('..', '', $template);
 			if(file_exists($view_path)) {
 				return $view_path;
 			}

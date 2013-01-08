@@ -8,10 +8,11 @@ use Microsite\DB\PDO\DB;
 use Microsite\Handler;
 use Microsite\Tinycode;
 use Microsite\Renderers\JSONRenderer;
+use Microsite\Renderers\MarkdownRenderer;
 use Microsite\DB\Mongo\DB as MongoDB;
 
-include 'src/microsite.phar';
-//include 'src/stub2.php';
+//include 'src/microsite.phar';
+include 'src/stub2.php';
 
 $app = new App();
 
@@ -272,6 +273,14 @@ $app->route('accecpt_json', '/accept', function(Response $response, App $app) {
 	$response['message'] = 'The result of the demo appears here.  This is from JSON.';
 	return $response;
 })->type('application/json');
+
+/**
+ * Render some markdown
+ */
+$app->route('markdown', '/markdown', function(Response $response, App $app) {
+	$response->set_renderer(MarkdownRenderer::create($app->template_dirs(), $app));
+	return $response->render('markdown.md');
+});
 
 /**
  * Register an on-demand object with the app for a real database
