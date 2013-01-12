@@ -134,8 +134,8 @@ class AppTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->app->route('name', '/test', function(){ return 'ok'; });
 
-		$this->app->simulate_request('/test');
-		$this->assertEquals('ok', $this->app->run());
+		$result = $this->app->simulate_request('/test');
+		$this->assertEquals('ok', $result);
 	}
 
 	/**
