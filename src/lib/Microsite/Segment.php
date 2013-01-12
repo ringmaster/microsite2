@@ -75,7 +75,7 @@ class Segment extends RouteMatcher
 					$regex .= $validations[$segment];
 				}
 				else {
-					$regex .= '.+?';
+					$regex .= '[^/]+?';
 				}
 				$regex .= ')';
 				if(count($segments) == 0) {

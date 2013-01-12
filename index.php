@@ -335,6 +335,19 @@ $app->route('tinycode', '/tiny', function(){
 	}
 });
 
+$app->route('first', '/one/two', function() {
+	echo 'one/two';
+});
+$app->route('second', '/one/two/three', function() {
+	echo 'one/two/three';
+});
+$app->route('first2', '/one/:two', function() {
+	echo 'one/:two';
+});
+$app->route('second2', '/one/:two/three', function() {
+	echo 'one/:two/three';
+});
+
 /**
  * Run the app to match and dispatch routes
  */
