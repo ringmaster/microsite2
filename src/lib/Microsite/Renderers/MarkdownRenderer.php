@@ -4,7 +4,7 @@ namespace Microsite\Renderers;
 
 define( 'MARKDOWN_VERSION',  "1.0.1o" ); # Sun 8 Jan 2012
 
-class MarkdownRenderer extends PHPRenderer {
+class MarkdownRenderer extends Renderer {
 
 	### Configuration Variables ###
 
@@ -97,7 +97,7 @@ class MarkdownRenderer extends PHPRenderer {
 		$this->html_hashes = array();
 	}
 
-	public function render($template, $vars) {
+	public function render($template, $vars = []) {
 		if(is_callable($template)) {
 			$result = $template($vars);
 		}

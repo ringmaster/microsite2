@@ -6,7 +6,7 @@ use Microsite\Renderers\Renderer;
 
 class JSONRenderer extends Renderer
 {
-	public function render($template, $vars) {
+	public function render($template, $vars = []) {
 		header('content-type: application/json');
 		foreach($vars as $key => $value) {
 			if(is_object($value)) {

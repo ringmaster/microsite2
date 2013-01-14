@@ -49,7 +49,7 @@ abstract class Renderer
 	 * @param array $vars An associative array of variables to pass into the template
 	 * @return mixed The result of the rendering operation
 	 */
-	public abstract function render($template, $vars);
+	public abstract function render($template, $vars = []);
 
 	/**
 	 * Pass undefined methods on this renderer up to the App
@@ -59,5 +59,22 @@ abstract class Renderer
 	 */
 	public function __call($name, $args) {
 		return call_user_func_array(array($this->app, $name), $args);
+	}
+
+	/**
+	 * @param string $template Template filename to fetch
+	 * @return bool|string Pathname of the template file or false if none found
+	 */
+	public function get_template_file($template) {
+		foreach($this->template_dirs as $view_path) {
+			if(substr($view_path, -1, 1) != '/' && $template[0] != '/') {
+				$view_path .= '/';
+			}
+			$view_path .= str_replace('..', '', $template);
+			if(file_exists($view_path)) {
+				return $view_path;
+			}
+		}
+		return false;
 	}
 }
