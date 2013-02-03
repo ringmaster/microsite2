@@ -9,6 +9,12 @@ class DB extends PDO
 	protected $pdo_statement;
 	protected $fetch_class;
 
+	/**
+	 * Construct a database object
+	 * @param string $connect_string A connection string like "sqlite:{filename}"
+	 * @param string $username The username for a connection
+	 * @param string $password The password for a connection
+	 */
 	public function __construct($connect_string, $username = '', $password = '')
 	{
 		try {
@@ -20,6 +26,13 @@ class DB extends PDO
 		}
 	}
 
+	/**
+	 * Run a query against a database.  Get a result
+	 * @param string $query The SQL to run against the database
+	 * @param array $args An associative array of query parameters
+	 * @return bool|\PDOStatement False if query fails, results in this database's fetch_class if successful
+	 * @throws \Exception
+	 */
 	public function query($query, $args = array())
 	{
 		if(!empty($this->pdo_statement)) {
@@ -39,6 +52,13 @@ class DB extends PDO
 		}
 	}
 
+	/**
+	 * Get all of the results for a query
+	 * @param string $query The SQL to get the results for
+	 * @param array $args An associative array of parameters for the query
+	 * @param string $class_name An optional class to use as each row instance in the result array
+	 * @return array|bool  The results in an array if successful, false if fail
+	 */
 	public function results($query, $args = array(), $class_name = '\Microsite\DB\PDO\Model')
 	{
 		$this->fetch_class = $class_name;
@@ -50,6 +70,13 @@ class DB extends PDO
 		}
 	}
 
+	/**
+	 * Get a single row from a query
+	 * @param string $query The SQL to get the results for
+	 * @param array $args An associative array of parameters for the query
+	 * @param string $class_name An optional class to use for the result
+	 * @return array|bool  The results in an array if successful, false if fail
+	 */
 	public function row($query, $args = array(), $class_name = '\Microsite\DB\PDO\Model')
 	{
 		$this->fetch_class = $class_name;
@@ -62,6 +89,12 @@ class DB extends PDO
 		}
 	}
 
+	/**
+	 * Get all of the values for a specific column from a query
+	 * @param string $query The SQL to get the results for
+	 * @param array $args An associative array of parameters for the query
+	 * @return array|bool  The results in an array if successful, false if fail
+	 */
 	public function col($query, $args = array())
 	{
 		if($this->query($query,$args)) {
@@ -72,6 +105,12 @@ class DB extends PDO
 		}
 	}
 
+	/**
+	 * Get a single field value result for a query
+	 * @param string $query The SQL to get the result for
+	 * @param array $args An associative array of parameters for the query
+	 * @return mixed|bool  The result if successful, false if fail
+	 */
 	public function val($query, $args = array())
 	{
 		if($this->query($query,$args)) {
@@ -83,10 +122,20 @@ class DB extends PDO
 		}
 	}
 
+	/**
+	 * Get an associative array of the results for a query
+	 * @param string $query The SQL to get the results for
+	 * @param array $args An associative array of parameters for the query
+	 * @param int|string $keyfield The index or name of the field to use as the key in the result array
+	 * @param int|string $valuefield The index or name of the field to use as the value in the result array, or the name of
+	 *   a class that should be used as the result class for each row in the result array
+	 * @internal param string $class_name An optional class to use as each row instance in the result array
+	 * @return array|bool  The results in an array if successful, false if fail
+	 */
 	public function assoc($query, $args = array(), $keyfield = 0, $valuefield = 1)
 	{
-		if($this->query($query,$args)) {
-			if(is_string($valuefield)) {
+		if($this->query($query, $args)) {
+			if(is_string($valuefield) && class_exists($valuefield, true)) {
 				$this->fetch_class = $valuefield;
 				$result = $this->pdo_statement->fetchAll();
 			}

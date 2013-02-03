@@ -148,14 +148,28 @@ class Model implements \ArrayAccess, \IteratorAggregate, \Countable, \Serializab
 		}
 	}
 
+	/**
+	 * Set a field value by object property
+	 * @param string $fieldname The name of a field
+	 * @param mixed $value The value of the field
+	 */
 	public function __set($fieldname, $value) {
 		$this->fields[$fieldname] = $value;
 	}
 
+	/**
+	 * Get a field value by object property
+	 * @param string $fieldname The name of the field
+	 * @return mixed The field value
+	 */
 	public function __get($fieldname) {
 		return $this->fields[$fieldname];
 	}
 
+	/**
+	 * Get an array of field names for this Model
+	 * @return array An array of field names
+	 */
 	public function get_fields() {
 		return array_keys($this->fields);
 	}
@@ -179,12 +193,24 @@ class Model implements \ArrayAccess, \IteratorAggregate, \Countable, \Serializab
 		return "{$field} = :{$field}";
 	}
 
+	/**
+	 * Return an object with the field values as object properties
+	 * @return \StdClass The field values as stdClass object properties
+	 */
 	public function std() {
 		$obj = new \StdClass();
 		foreach($this->fields as $key => $value) {
 			$obj->$key = $value;
 		}
 		return $obj;
+	}
+
+	/**
+	 * Return the fields as an associative array
+	 * @return array The field values in an associative array
+	 */
+	public function ary() {
+		return $this->fields;
 	}
 }
 
