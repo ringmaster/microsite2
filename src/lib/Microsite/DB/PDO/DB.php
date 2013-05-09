@@ -75,7 +75,7 @@ class DB extends PDO
 	 * @param string $query The SQL to get the results for
 	 * @param array $args An associative array of parameters for the query
 	 * @param string $class_name An optional class to use for the result
-	 * @return array|bool  The results in an array if successful, false if fail
+	 * @return \Microsite\DB\PDO\Model|bool|object  The result in a Model object if successful, false if fail
 	 */
 	public function row($query, $args = array(), $class_name = '\Microsite\DB\PDO\Model')
 	{

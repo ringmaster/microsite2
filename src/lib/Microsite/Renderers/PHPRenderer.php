@@ -11,6 +11,16 @@ class PHPRenderer extends Renderer
 			$result = $template($vars);
 		}
 		elseif($template_file = $this->get_template_file($template)) {
+			if(preg_match('#\.(\w+)$#', $template_file, $matches)) {
+				$ext = strtolower($matches[1]);
+				if($ext != 'php') {
+					$wrappers = stream_get_wrappers();
+					if(in_array($ext, $wrappers)) {
+						$template_file = $ext . ':/' . $template_file;
+					}
+				}
+			}
+
 			extract($vars);
 			ob_start();
 			include $template_file;

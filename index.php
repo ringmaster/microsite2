@@ -6,6 +6,7 @@ use Microsite\Response;
 use Microsite\Request;
 use Microsite\DB\PDO\DB;
 use Microsite\Handler;
+use Microsite\Template;
 use Microsite\Tinycode;
 use Microsite\Renderers\JSONRenderer;
 use Microsite\Renderers\MarkdownRenderer;
@@ -346,6 +347,19 @@ $app->route('first2', '/one/:two', function() {
 });
 $app->route('second2', '/one/:two/three', function() {
 	echo 'one/:two/three';
+});
+
+$app->route('template', '/template', function(Response $response) {
+	Template::register('tpl');
+	$response['name'] = '<b>Owen Winkler</b>';
+	$user = new stdClass();
+	$user->city = 'Chester Springs';
+	$user->age = 39;
+	$user->gender = 'male';
+	$response['user'] = $user;
+	$response['rows'] = [['cell' => 4],['cell' => '<b>3</b>'],['cell' => 12],['cell' => 8],];
+	$response['values'] = [1,3,5,8,15];
+	return $response->render('template.tpl');
 });
 
 /**
