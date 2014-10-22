@@ -205,6 +205,18 @@ class AppTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('test', $this->app->simulate_request('/layer/test'));
 	}
 
+	/**
+	 * @covers Microsite\App::middleware
+	 */
+	public function testMiddleware()
+	{
+		$this->app->middleware('auth', function(Response $response) {$response['user_id'] = 4;});
+		$this->app->route('name', '/test', function(Response $response){ return $response['user_id']; });
+
+		$_SERVER['REQUEST_URI'] = '/test';
+		$this->assertEquals('4', $this->app->run());
+	}
+
 	public function test500()
 	{
 		$this->app->route('500', '/500', function(){ throw new \Exception('Test Exception for 500'); });

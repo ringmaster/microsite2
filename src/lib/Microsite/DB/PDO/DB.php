@@ -6,14 +6,17 @@ use \PDO;
 
 class DB extends PDO
 {
+	/** @var \PDOStatement $pdo_statement */
 	protected $pdo_statement;
-	protected $fetch_class;
+	/** @var  string $fetch_class */
+	protected $fetch_class = '\Microsite\DB\PDO\Model';
 
 	/**
 	 * Construct a database object
 	 * @param string $connect_string A connection string like "sqlite:{filename}"
 	 * @param string $username The username for a connection
 	 * @param string $password The password for a connection
+	 * @throws \Exception
 	 */
 	public function __construct($connect_string, $username = '', $password = '')
 	{
@@ -113,7 +116,8 @@ class DB extends PDO
 	 */
 	public function val($query, $args = array())
 	{
-		if($this->query($query,$args)) {
+		$this->fetch_class = '\Microsite\DB\PDO\Model';
+		if($this->query($query, $args)) {
 			$result = $this->pdo_statement->fetch(PDO::FETCH_NUM);
 			return $result[0];
 		}

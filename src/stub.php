@@ -1,6 +1,6 @@
 <?php
 
-// Disable the static web routeing of this phar from an including file by defining NO_STATIC_WEB, if necessary
+// Disable the static web routing of this phar from an including file by defining NO_STATIC_WEB, if necessary
 if(defined('NO_STATIC_WEB')) {
 	Phar::mapPhar('microsite.phar');
 }

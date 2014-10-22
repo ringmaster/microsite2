@@ -33,7 +33,7 @@ class Route
 	 */
 	public function add_handler($handler) {
 		$this->handlers[] = $handler;
-		if($handler instanceof App) {
+		if($handler instanceof App || $handler instanceof RouteMatcher) {
 			$this->url->fluid = true;
 		}
 		return $this;
@@ -156,7 +156,7 @@ class Route
 
 	/**
 	 * Check if this route matches the request
-	 * @param Request $request
+	 * @param App $app
 	 * @return bool True if this route matches the Request
 	 */
 	public function match(App $app) {
@@ -186,42 +186,8 @@ class Route
 
 	public function run(App $app) {
 		foreach($this->handlers as $handler) {
-			$result = false;
 			ob_start();
-			if(is_callable($handler)) {
-				// Do some magic...
-				$exec_params = [];
-				if($handler instanceof App) {
-					$exec_params[] = $app;
-				}
-				else {
-					$rf = new ReflectionFunction($handler);
-					$params = $rf->getParameters();
-					// @todo Should probably cache these, if possible...
-					foreach($params as $param) {
-						$param_class = $param->getClass();
-						$param_type = '';
-						if($param_class instanceof ReflectionClass) {
-							$param_type = $param_class->getName();
-						}
-						switch($param_type) {
-							case 'Microsite\Request':
-								$exec_params[] = $app->request();
-								break;
-							case 'Microsite\Response':
-								$exec_params[] = $app->response();
-								break;
-							default:
-								$exec_params[] = $app;
-								break 2;
-						}
-					}
-				}
-				$result = call_user_func_array($handler, $exec_params);
-			}
-//			elseif($handler instanceof App) {
-//				$result = $handler->run($request, $response, $app);
-//			}
+			$result = $app->exec_params($handler);
 			$output = ob_get_clean();
 			if(!$result) {
 				$result = $output;

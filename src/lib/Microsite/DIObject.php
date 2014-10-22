@@ -36,4 +36,13 @@ class DIObject
 		}
 		return call_user_func_array($this->callback, $args);
 	}
+
+	/**
+	 * Allow the DIObject instance to be executed as if it is the callback it represents
+	 * @return mixed|null
+	 */
+	public function __invoke() {
+		$args = func_get_args();
+		return $this->invoke($args);
+	}
 }

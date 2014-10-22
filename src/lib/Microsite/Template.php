@@ -138,26 +138,20 @@ class Template
 
 	/**
 	 * Return fstat() info as required when calling stats on the stream
-	 * @param string $path The path of the template file in question
-	 * @param integer $flags Some flags dealing with how to handle errors within this function
 	 * @return array An array of stat()-like result data
 	 */
-	function stream_stat($path, $flags)
+	function stream_stat()
 	{
-		$filename = substr( $path, 5 );
-		return stat($filename);
+		return stat($this->filename);
 	}
 
 	/**
 	 * Return fstat() info as required when calling stats on the stream
-	 * @param string $path The path of the template file in question
-	 * @param integer $flags Some flags dealing with how to handle errors within this function
 	 * @return array An array of stat()-like result data
 	 */
-	function url_stat( $path, $flags)
+	function url_stat()
 	{
-		$filename = substr( $path, 5 );
-		$result = stat($filename);
+		$result = stat($this->filename);
 		$result['mtime'] = time();
 		return $result;
 	}

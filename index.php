@@ -213,11 +213,17 @@ $app->route('odd', new Regex('#^/number/(?P<number>[0-9]+)/?$#'), function(Reque
 	echo "The number {$request['number']} was odd.";
 })->validate(function($request) { return $request['number'] % 2 == 1;});
 
+class AdminApp extends App {
+	public function add_response(Response $response) {
+		$response['added'] = 'true';
+	}
+}
+
 
 /**
  * Create a new app to layer into the /admin URL space.
  */
-$admin = new App();
+$admin = new AdminApp();
 
 /**
  * Within the admin app, create a /plugins URL
@@ -225,6 +231,14 @@ $admin = new App();
  */
 $admin->route('plugins', '/plugins', function() {
 	echo "This is the Plugins page";
+});
+
+/**
+ * Display the value of "added" as added in the app middleware
+ * Note the use of a string as the middleware method name, and that it resolves to the app method
+ */
+$admin->route('add_response', '/add_response', 'add_response', function(Response $response){
+	echo $response['added'];
 });
 
 /**
@@ -296,6 +310,8 @@ $app->route('database', '/database', function(App $app) {
 	$samples = $app->db()->results('SELECT * FROM sample ORDER BY age ASC;');
 
 	$response['output'] = $response->partial('table.php', array('results' => $samples));
+	$response['count'] = $app->db()->val('SELECT count(*) as ct FROM sample');
+	$response['sample'] = $samples[0]['name'];
 	return $response->render('debug.php');
 });
 
@@ -361,6 +377,34 @@ $app->route('template', '/template', function(Response $response) {
 	$response['values'] = [1,3,5,8,15];
 	return $response->render('template.tpl');
 });
+
+class UserController extends \Microsite\Controller {
+	/**
+	 * @url /any
+	 */
+	public function do_any() {
+		echo 'do any';
+	}
+
+	/**
+	 * @url /get
+	 * @method GET
+	 */
+	public function do_get() {
+		echo 'do get';
+	}
+
+	/**
+	 * @url /post
+	 * @method POST
+	 */
+	public function do_post() {
+		echo 'do post';
+	}
+}
+
+$app->route('user', '/user', \Microsite\Controller::mount('UserController'));
+
 
 /**
  * Run the app to match and dispatch routes

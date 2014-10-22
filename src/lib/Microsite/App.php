@@ -2,6 +2,13 @@
 
 namespace Microsite;
 
+/**
+ * Class App
+ * @package Microsite
+ * @method array template_dirs() Return an array of potential template directories
+ * @method Renderers\PHPRenderer renderer() Obtain the default/active renderer for the app
+ * @method void header() Output a header
+ */
 class App
 {
 	private $routes = array();
@@ -11,6 +18,7 @@ class App
 	protected $defaults = array();
 	/** @var Route $route The route that the current request matched */
 	public $route = null;
+	private $middleware = array();
 
 	/**
 	 * Constructor for App
@@ -26,7 +34,7 @@ class App
 		});
 		$this->share('renderer', function() {
 				$template_dirs = $this->template_dirs();
-				return \Microsite\Renderers\PHPRenderer::create($template_dirs, $this);
+				return Renderers\PHPRenderer::create($template_dirs, $this);
 			}
 		);
 		$this->demand('header', function($header, $replace = null, $http_response_code = null){
@@ -58,7 +66,7 @@ class App
 	 * Create a new named route and handle it with a callback
 	 * @param string $name Name of the route
 	 * @param string|Regex|Segment $url The URL to match
-	 * @param Callable $handler One or more callbacks (as additional parameters) to execute to handle this route
+	 * @param Callable|Controller|Handler $handler One or more callbacks (as additional parameters) to execute to handle this route
 	 * @return Route The route that is created to handle this request
 	 */
 	public function route($name, $url, $handler) {
@@ -71,6 +79,23 @@ class App
 		}
 		$this->routes[$name] = $route;
 		return $route;
+	}
+
+	/**
+	 * Create a new named middleware and handle it with a callback
+	 * @param string $name Name of the route
+	 * @param Callable $handler One or more callbacks (as additional parameters) to execute to handle this route
+	 * @return App This App instance
+	 */
+	public function middleware($name, $handler) {
+		static $ct = 0;
+		$args = func_get_args();
+		$name = array_shift($args);
+		foreach($args as $handler) {
+			$this->middleware["{$name}.{$ct}"] = $handler;
+			$ct++;
+		}
+		return $this;
 	}
 
 	/**
@@ -90,13 +115,18 @@ class App
 	 * @return string The URL built from the provided parameters
 	 */
 	public function get_url($name, $args = []) {
-		$result = isset($this->routes[$name]) ? $this->routes[$name] : null;
-		return isset($result) ? $result->build($args) : '';
+		if(isset($this->routes[$name])) {
+			$result = $this->routes[$name];
+			if($result instanceof Route) {
+				return $result->build($args);
+			}
+		}
+		return '';
 	}
 
 	/**
 	 * Run the app, parsing the requested URL and dispatching to the appropriate Route
-	 * @param App|null $parent
+	 * @internal \Microsite\App|null $parent
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
 	public function run() {
@@ -123,6 +153,9 @@ class App
 			}
 
 			if(isset($this->route)) {
+				foreach($this->middleware as $middleware) {
+					$this->exec_params($middleware);
+				}
 				$result = $this->route->run($this);
 				if($result) {
 					$output = (string) $result;
@@ -145,12 +178,14 @@ class App
 			$response['error'] = $e;
 			$this->header('HTTP/1.1 500 Internal Server Error');
 			if($response instanceof Response) {
-				echo $response->render('error.php');
+				$output = $response->render('error.php');
 			}
 			else {
-				var_dump($e);
+				$output = var_export($e, true);
 			}
 		}
+		echo $output;
+		return $output;
 	}
 
 	/**
@@ -160,7 +195,7 @@ class App
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
 	public function __invoke($app = null) {
-		if(isset($app)) {
+		if($app instanceof App) {
 			$request = $app->request();
 			$this->request($request);
 		}
@@ -223,10 +258,72 @@ class App
 	 */
 	protected function dispatch_object($name, $args) {
 		if(isset($this->objects[$name])) {
+			/** @var DIObject $call_object */
 			$call_object = $this->objects[$name];
 			return $call_object->invoke($args);
 		}
 		return null;
+	}
+
+	/**
+	 * Provided with a function with an unknown parameter signature, execute with the demanded parameters based on type
+	 * @param Callable|App $handler The function/method to call
+	 * @return bool|mixed The result of calling the handler with the parameters it requires
+	 */
+	public function exec_params($handler) {
+		$result = false;
+		if(is_string($handler) && method_exists($this, $handler)) {
+			$rf = new \ReflectionMethod($this, $handler);
+			$exec_params = $this->params_from_reflection($rf);
+			$result = call_user_func_array([$this, $handler], $exec_params);
+		}
+		elseif(is_string($handler) && class_exists($handler, true)) {
+			$handler::get_instance($this);
+			$result = call_user_func_array($this, [$this]);
+		}
+		elseif(is_callable($handler)) {
+			// Do some magic...
+			$exec_params = [];
+			if($handler instanceof App) {
+				$exec_params[] = $this;
+			}
+			else {
+				$rf = new \ReflectionFunction($handler);
+				$exec_params = $this->params_from_reflection($rf);
+			}
+			$result = call_user_func_array($handler, $exec_params);
+		}
+		return $result;
+	}
+
+	/**
+	 * Return a list of parameters to use based on the types indicated in the function declaration
+	 * @param \ReflectionFunctionAbstract $rf The reflection object instance
+	 * @return array An array of parameters to use
+	 */
+	protected function params_from_reflection(\ReflectionFunctionAbstract $rf) {
+		$params = $rf->getParameters();
+		// @todo Should probably cache these, if possible...
+		$exec_params = [];
+		foreach($params as $param) {
+			$param_class = $param->getClass();
+			$param_type = '';
+			if($param_class instanceof \ReflectionClass) {
+				$param_type = $param_class->getName();
+			}
+			switch($param_type) {
+				case 'Microsite\Request':
+					$exec_params[] = $this->request();
+					break;
+				case 'Microsite\Response':
+					$exec_params[] = $this->response();
+					break;
+				default:
+					$exec_params[] = $this;
+					break 2;
+			}
+		}
+		return $exec_params;
 	}
 
 	/**
