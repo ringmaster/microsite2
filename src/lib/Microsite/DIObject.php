@@ -11,6 +11,8 @@ class DIObject
 	protected $callback;
 	protected $shared;
 	protected $result = null;
+	/** @var null|Callable $handler  */
+	protected $handler = null;
 
 	/**
 	 * Create a new DIObject instance

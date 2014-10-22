@@ -7,7 +7,7 @@ use ReflectionClass;
 
 class Route
 {
-	private $url;
+	public $url;
 	private $handlers = array();
 	private $validators = array();
 	private $orig_url;
@@ -33,7 +33,7 @@ class Route
 	 */
 	public function add_handler($handler) {
 		$this->handlers[] = $handler;
-		if($handler instanceof App || $handler instanceof RouteMatcher) {
+		if(is_object($handler)) {
 			$this->url->fluid = true;
 		}
 		return $this;
@@ -84,6 +84,12 @@ class Route
 		return $this->url->build($vars);
 	}
 
+	/**
+	 * Convert a URL parameter into a real value
+	 * @param string $var The name of the URL parameter
+	 * @param Callable $fn($value, $fieldname) A function to call to convert this parameter into a value
+	 * @return Route $this Fluent interface.
+	 */
 	public function convert($var, $fn) {
 		$this->url->convert($var, $fn);
 		return $this;

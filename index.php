@@ -76,8 +76,8 @@ $app->route('valid', '/valid/:valid', function(Request $request) {
  */
 $app
 	->route(
-		'user',
-		'/user/:user',
+		'author',
+		'/author/:user',
 		function(Request $request, Response $response) {
 			$response['output'] = '<pre>' . print_r($request['user'], 1) . '</pre>';
 			return $response->render('debug.php');
@@ -378,12 +378,20 @@ $app->route('template', '/template', function(Response $response) {
 	return $response->render('template.tpl');
 });
 
-class UserController extends \Microsite\Controller {
+class UserHandler extends \Microsite\Handler {
+
+	public function load(App $app) {
+		parent::load($app);
+		$app->route('do_routed', '/routed/:number', [$this, 'do_routed'])
+			->validate_fields([':number' => '[0-9]+']);
+	}
+
 	/**
 	 * @url /any
 	 */
-	public function do_any() {
+	public function do_any(App $app) {
 		echo 'do any';
+		var_dump($app);
 	}
 
 	/**
@@ -401,14 +409,24 @@ class UserController extends \Microsite\Controller {
 	public function do_post() {
 		echo 'do post';
 	}
+
+	/**
+	 * @param Request $request
+	 * @url /value/:value
+	 */
+	public function do_value(Request $request) {
+		echo $request['value'];
+	}
+
+	public function do_routed(Request $request) {
+		echo 'routed.  The number was: ' . $request['number'];
+	}
 }
 
-$app->route('user', '/user', \Microsite\Controller::mount('UserController'));
+$app->route('user', '/user', \Microsite\Handler::mount('UserHandler'));
 
 
 /**
  * Run the app to match and dispatch routes
  */
 $app();
-
-?>

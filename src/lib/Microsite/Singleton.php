@@ -4,7 +4,7 @@ namespace Microsite;
 
 class Singleton {
 
-	private static $instances = [];
+	private static $singleton_instances = [];
 
 
 	/**
@@ -14,12 +14,12 @@ class Singleton {
 	public static function get_instance()
 	{
 		$class = get_called_class();
-		if (!isset(self::$instances[$class])) {
+		if (!isset(self::$singleton_instances[$class])) {
 			$args = func_get_args();
 			$r_class = new \ReflectionClass($class);
-			self::$instances[$class] = $r_class->newInstanceArgs($args);
+			self::$singleton_instances[$class] = $r_class->newInstanceArgs($args);
 		}
-		return self::$instances[$class];
+		return self::$singleton_instances[$class];
 	}
 
 	/**

@@ -7,7 +7,7 @@ namespace Microsite;
  * @package Microsite
  * @method array template_dirs() Return an array of potential template directories
  * @method Renderers\PHPRenderer renderer() Obtain the default/active renderer for the app
- * @method void header() Output a header
+ * @method void header() Output an HTTP header
  */
 class App
 {
@@ -191,7 +191,7 @@ class App
 	/**
 	 * Allow this object to be executed directly
 	 * Example:  $app = new App();  $app();
-	 * @param \Microsite\App|null $parent A parent App instance with relevant properties
+	 * @param App|null $app A parent App instance with relevant properties
 	 * @return bool|string Upon successful execution, the string of output produced, otherwise false
 	 */
 	public function __invoke($app = null) {
@@ -272,20 +272,30 @@ class App
 	 */
 	public function exec_params($handler) {
 		$result = false;
+		// Unwind DIObjects
+		while($handler instanceof DIObject) {
+			$handler = $handler($this);
+		}
 		if(is_string($handler) && method_exists($this, $handler)) {
 			$rf = new \ReflectionMethod($this, $handler);
 			$exec_params = $this->params_from_reflection($rf);
 			$result = call_user_func_array([$this, $handler], $exec_params);
 		}
-		elseif(is_string($handler) && class_exists($handler, true)) {
-			$handler::get_instance($this);
-			$result = call_user_func_array($this, [$this]);
+		elseif($handler instanceof Handler) {
+			$newapp = new App();
+			$handler->load($newapp);
+			$result = $newapp($this);
 		}
 		elseif(is_callable($handler)) {
 			// Do some magic...
 			$exec_params = [];
 			if($handler instanceof App) {
 				$exec_params[] = $this;
+			}
+			elseif(is_array($handler)) {
+				list($object, $method) = $handler;
+				$rm = new \ReflectionMethod($object, $method);
+				$exec_params = $this->params_from_reflection($rm);
 			}
 			else {
 				$rf = new \ReflectionFunction($handler);
@@ -337,5 +347,4 @@ class App
 	public function __call($name, $args) {
 		return $this->dispatch_object($name, $args);
 	}
-
 }
