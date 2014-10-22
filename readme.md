@@ -44,10 +44,26 @@ $app->run();
 You can detect variables passed in to your URLs easily:
 
 ```php
-$app->route('hello', '/hello/:name', function($response, $request) {
+$app->route('hello', '/hello/:name', function(Request $request) {
 	return "Hello {$request['name']}!";
 });
 ?>
+```
+
+### Handlers
+A Handler class can be layered in at a specific route to handle many request URLs:
+```php
+use Microsite\Handler;
+class UserHandler extends Handler {
+	/**
+	 * @url /get/:user_id
+	 **/
+	public function get_user(Request $request) {
+	  echo "The user id was " . $request['user_id'];
+	}
+}
+
+$app->route('user', '/user', Handler::mount('UserHandler'));
 ```
 
 ### Additional Examples
@@ -115,6 +131,6 @@ $app->route('view_item_unauth', '/item/:item', function(){ /* show the item WITH
 	->validate(function(){ /* return true if the user is NOT logged in */});
 ```
 
-Since unauthenticated users don't match the first route due to the validation function, the second route is able to test and execute.  
+Since unauthenticated users don't match the first route due to the validation function, the second route is able to test and execute. 
 
 It is possible to acheive this same capability by using two handlers on the same route, and there is no obvious advantage either way other than which way you feel makes your code most readable.
