@@ -197,6 +197,9 @@ class App
 	public function __invoke($app = null) {
 		if($app instanceof App) {
 			$request = $app->request();
+			if(empty($request['match_url'])) {
+				$request['match_url'] = '/';
+			}
 			$this->request($request);
 		}
 		return $this->run();

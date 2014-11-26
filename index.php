@@ -242,6 +242,13 @@ $admin->route('add_response', '/add_response', 'add_response', function(Response
 });
 
 /**
+ * Build an index for the admin route
+ */
+$admin->route('admin_index', '/', function(){
+	echo "This is the admin index";
+});
+
+/**
  * Add the admin app as a handler within the /admin route on the main app
  */
 $app->route('admin', '/admin', $admin);
@@ -387,10 +394,10 @@ class UserHandler extends \Microsite\Handler {
 	}
 
 	/**
-	 * @url /any
+	 * @url /
 	 */
-	public function do_any(App $app) {
-		echo 'do any';
+	public function do_index(App $app) {
+		echo 'do index';
 		var_dump($app);
 	}
 

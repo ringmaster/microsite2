@@ -33,7 +33,7 @@ class Route
 	 */
 	public function add_handler($handler) {
 		$this->handlers[] = $handler;
-		if(is_object($handler)) {
+		if($handler instanceof Handler || $handler instanceof App) {
 			$this->url->fluid = true;
 		}
 		return $this;

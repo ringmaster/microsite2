@@ -93,7 +93,7 @@ class Segment extends RouteMatcher
 				$regex .= preg_quote($segment, '#');
 				if(count($segments) == 0) {
 					if($this->fluid) {
-						$regex .= '(?P<match_url>/.*)?$'; // If the last segment is a literal, but the route is fluid, capture the end of the URL into match_url
+						$regex .= '(?P<match_url>.*)?$'; // If the last segment is a literal, but the route is fluid, capture the end of the URL into match_url
 					}
 					else {
 						$regex .= '$'; // If the last segment is a literal, cap the end of the URL
